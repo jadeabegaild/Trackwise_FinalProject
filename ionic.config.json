@@ -1,0 +1,7 @@
+{
+  "name": "Trackwise",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
