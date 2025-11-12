@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Register</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="registerForm" (ngSubmit)="register()">
+    <ion-item>
+      <ion-label position="stacked">Business Name</ion-label>
+      <ion-input formControlName="businessName" type="text"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Email</ion-label>
+      <ion-input formControlName="email" type="email"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Phone</ion-label>
+      <ion-input formControlName="phone" type="tel"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Password</ion-label>
+      <ion-input formControlName="password" type="password"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-label position="stacked">Confirm Password</ion-label>
+      <ion-input formControlName="confirmPassword" type="password"></ion-input>
+    </ion-item>
+
+    <ion-button 
+      type="submit" 
+      expand="block" 
+      [disabled]="!registerForm.valid"
+      class="ion-margin-top">
+      Register
+    </ion-button>
+
+    <ion-button 
+      routerLink="/login"
+      expand="block" 
+      fill="clear"
+      class="ion-margin-top">
+      Already have an account? Login
+    </ion-button>
+  </form>
+</ion-content>

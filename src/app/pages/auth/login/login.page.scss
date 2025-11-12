@@ -1,0 +1,48 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100%;
+  padding: 20px 0;
+}
+
+ion-card {
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+ion-card-header {
+  text-align: center;
+}
+
+ion-card-title {
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+.validation-error {
+  font-size: 0.8rem;
+  margin-top: -10px;
+  margin-bottom: 15px;
+  padding-left: 16px;
+}
+
+.register-link {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--ion-color-light-shade);
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .login-container {
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+  
+  ion-card {
+    margin: 0;
+    box-shadow: none;
+  }
+}

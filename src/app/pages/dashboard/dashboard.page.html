@@ -1,0 +1,53 @@
+<ion-tabs>
+  <ion-tab-bar slot="bottom">
+    <ion-tab-button tab="pos">
+      <ion-icon name="cart"></ion-icon>
+      <ion-label>POS</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="inventory">
+      <ion-icon name="cube"></ion-icon>
+      <ion-label>Inventory</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="reports">
+      <ion-icon name="bar-chart"></ion-icon>
+      <ion-label>Reports</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="customers">
+      <ion-icon name="people"></ion-icon>
+      <ion-label>Customers</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="more">
+      <ion-icon name="menu"></ion-icon>
+      <ion-label>More</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+
+  <!-- POS Tab -->
+  <ion-tab tab="pos">
+    <ion-nav [root]="posRoot"></ion-nav>
+  </ion-tab>
+
+  <!-- Inventory Tab -->
+  <ion-tab tab="inventory">
+    <ion-nav [root]="inventoryRoot"></ion-nav>
+  </ion-tab>
+
+  <!-- Reports Tab -->
+  <ion-tab tab="reports">
+    <ion-nav [root]="reportsRoot"></ion-nav>
+  </ion-tab>
+
+  <!-- Customers Tab -->
+  <ion-tab tab="customers">
+    <ion-nav [root]="customersRoot"></ion-nav>
+  </ion-tab>
+
+  <!-- More Tab -->
+  <ion-tab tab="more">
+    <ion-nav [root]="moreRoot"></ion-nav>
+  </ion-tab>
+</ion-tabs>

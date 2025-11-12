@@ -1,0 +1,139 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Point of Sale</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openCart()">
+        <ion-icon slot="icon-only" name="cart"></ion-icon>
+        <ion-badge color="danger" *ngIf="cartItems.length > 0">{{cartItems.length}}</ion-badge>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Search and Categories -->
+  <ion-toolbar>
+    <ion-searchbar placeholder="Search products..." (ionInput)="searchProducts($event)"></ion-searchbar>
+  </ion-toolbar>
+
+  <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)">
+    <ion-segment-button value="all">
+      <ion-label>All</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="electronics">
+      <ion-label>Electronics</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="clothing">
+      <ion-label>Clothing</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="food">
+      <ion-label>Food</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+
+  <!-- Products Grid -->
+  <ion-grid>
+    <ion-row>
+      <ion-col size="6" size-md="4" size-lg="3" *ngFor="let product of filteredProducts">
+        <ion-card class="product-card" (click)="addToCart(product)">
+          <div class="image-container">
+            <ion-img [src]="product.image" [alt]="product.name"></ion-img>
+          </div>
+          <ion-card-header>
+            <ion-card-title>{{product.name}}</ion-card-title>
+            <ion-card-subtitle>{{product.category}}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <div class="price">₱{{product.price | number:'1.2-2'}}</div>
+            <div class="stock" [class.low-stock]="product.quantity < 10">
+              Stock: {{product.quantity}}
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredProducts.length === 0">
+    <ion-icon name="search-outline"></ion-icon>
+    <h3>No products found</h3>
+    <p>Try adjusting your search or filter</p>
+  </div>
+</ion-content>
+
+<!-- Cart Modal -->
+<ion-modal [isOpen]="isCartOpen" (didDismiss)="closeCart()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Shopping Cart</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeCart()">Close</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-item *ngFor="let item of cartItems; let i = index">
+          <ion-thumbnail slot="start">
+            <ion-img [src]="item.image"></ion-img>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>{{item.name}}</h3>
+            <p>₱{{item.price | number:'1.2-2'}} x {{item.quantity}}</p>
+          </ion-label>
+          <ion-note slot="end">₱{{(item.price * item.quantity) | number:'1.2-2'}}</ion-note>
+          <ion-buttons slot="end">
+            <ion-button (click)="decreaseQuantity(i)" color="medium">
+              <ion-icon name="remove"></ion-icon>
+            </ion-button>
+            <ion-button (click)="increaseQuantity(i)" color="primary">
+              <ion-icon name="add"></ion-icon>
+            </ion-button>
+            <ion-button (click)="removeFromCart(i)" color="danger">
+              <ion-icon name="trash"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-item>
+      </ion-list>
+
+      <div class="empty-state" *ngIf="cartItems.length === 0">
+        <ion-icon name="cart-outline"></ion-icon>
+        <h3>Your cart is empty</h3>
+        <p>Add some products to get started</p>
+      </div>
+
+      <ion-card *ngIf="cartItems.length > 0">
+        <ion-card-content>
+          <ion-item>
+            <ion-label>Subtotal</ion-label>
+            <ion-note>₱{{getSubtotal() | number:'1.2-2'}}</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label>Tax (12%)</ion-label>
+            <ion-note>₱{{getTax() | number:'1.2-2'}}</ion-note>
+          </ion-item>
+          <ion-item>
+            <ion-label><strong>Total</strong></ion-label>
+            <ion-note><strong>₱{{getTotal() | number:'1.2-2'}}</strong></ion-note>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+    </ion-content>
+    <ion-footer *ngIf="cartItems.length > 0">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="clearCart()" color="danger" fill="outline">
+            Clear All
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button (click)="checkout()" expand="block">
+            Checkout ₱{{getTotal() | number:'1.2-2'}}
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

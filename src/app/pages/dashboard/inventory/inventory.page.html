@@ -1,0 +1,226 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Inventory Management</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="openAddProductModal()" color="primary">
+        <ion-icon slot="start" name="add"></ion-icon>
+        Add Product
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Search and Filter -->
+  <ion-toolbar>
+    <ion-searchbar 
+      placeholder="Search products..." 
+      (ionInput)="searchProducts($event)"
+      [value]="searchTerm">
+    </ion-searchbar>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)">
+      <ion-segment-button value="all">
+        <ion-label>All</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="electronics">
+        <ion-label>Electronics</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="clothing">
+        <ion-label>Clothing</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="food">
+        <ion-label>Food</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+
+  <!-- Swipe Hint -->
+  <div class="swipe-hint" *ngIf="filteredProducts.length > 0">
+    <ion-icon name="swap-horizontal"></ion-icon>
+    <span>Swipe left on items to reveal actions</span>
+  </div>
+
+  <!-- Products List -->
+  <ion-list>
+    <ion-item-sliding *ngFor="let product of filteredProducts">
+      <ion-item (click)="editProduct(product)" button>
+        <ion-thumbnail slot="start">
+          <ion-img [src]="product.image" [alt]="product.name"></ion-img>
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{ product.name }}</h2>
+          <p>Category: {{ product.category }}</p>
+          <p>Barcode: {{ product.barcode }}</p>
+          <p>Price: ₱{{ product.price | number:'1.2-2' }}</p>
+        </ion-label>
+        <ion-note slot="end">
+          <div class="product-info">
+            <div class="stock" [class.low-stock]="product.quantity < 10">
+              Stock: {{ product.quantity }}
+            </div>
+            <div class="stock-status">
+              <ion-badge [color]="getStockStatus(product.quantity).color">
+                {{ getStockStatus(product.quantity).label }}
+              </ion-badge>
+            </div>
+          </div>
+        </ion-note>
+      </ion-item>
+
+      <ion-item-options side="end">
+        <ion-item-option (click)="editProduct(product)" color="primary">
+          <ion-icon slot="icon-only" name="create"></ion-icon>
+          Edit
+        </ion-item-option>
+        <ion-item-option (click)="deleteProduct(product.id!, product.name)" color="danger" class="delete-option">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+          Delete
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredProducts.length === 0">
+    <ion-icon name="cube-outline"></ion-icon>
+    <h3>No products found</h3>
+    <p *ngIf="searchTerm || selectedCategory !== 'all'">Try adjusting your search or filter</p>
+    <p *ngIf="!searchTerm && selectedCategory === 'all'">Add your first product to get started</p>
+    <ion-button (click)="openAddProductModal()" fill="outline">
+      Add Product
+    </ion-button>
+  </div>
+</ion-content>
+
+<!-- Add/Edit Product Modal -->
+<ion-modal [isOpen]="isModalOpen" (didDismiss)="closeModal()">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>{{ isEditing ? 'Edit Product' : 'Add New Product' }}</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeModal()">Close</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+        <ion-list>
+          <!-- Product Image -->
+          <ion-item>
+            <ion-thumbnail slot="start" class="image-preview">
+              <ion-img [src]="productForm.get('image')?.value || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=150'"></ion-img>
+            </ion-thumbnail>
+            <ion-label>
+              <h2>Product Image</h2>
+              <p>Upload or change product image</p>
+            </ion-label>
+            <input 
+              #fileInput 
+              type="file" 
+              accept="image/*" 
+              (change)="onImageSelected($event)" 
+              style="display: none"
+            />
+            <ion-button fill="clear" (click)="fileInput.click()">
+              <ion-icon slot="start" name="cloud-upload"></ion-icon>
+              Upload Image
+            </ion-button>
+          </ion-item>
+
+          <!-- Product Name -->
+          <ion-item>
+            <ion-label position="stacked">Product Name *</ion-label>
+            <ion-input 
+              formControlName="name" 
+              type="text" 
+              placeholder="Enter product name">
+            </ion-input>
+          </ion-item>
+          <ion-note color="danger" *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+            Product name is required
+          </ion-note>
+
+          <!-- Category -->
+          <ion-item>
+            <ion-label position="stacked">Category *</ion-label>
+            <ion-select formControlName="category" placeholder="Select category">
+              <ion-select-option value="electronics">Electronics</ion-select-option>
+              <ion-select-option value="clothing">Clothing</ion-select-option>
+              <ion-select-option value="food">Food</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <!-- Price -->
+          <ion-item>
+            <ion-label position="stacked">Price (₱) *</ion-label>
+            <ion-input 
+              formControlName="price" 
+              type="number" 
+              min="0" 
+              step="0.01" 
+              placeholder="0.00">
+            </ion-input>
+          </ion-item>
+          <ion-note color="danger" *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched">
+            Valid price is required
+          </ion-note>
+
+          <!-- Quantity -->
+          <ion-item>
+            <ion-label position="stacked">Quantity *</ion-label>
+            <ion-input 
+              formControlName="quantity" 
+              type="number" 
+              min="0" 
+              placeholder="0">
+            </ion-input>
+          </ion-item>
+          <ion-note color="danger" *ngIf="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
+            Valid quantity is required
+          </ion-note>
+
+          <!-- Barcode -->
+          <ion-item>
+            <ion-label position="stacked">Barcode Number</ion-label>
+            <ion-input 
+              formControlName="barcode" 
+              type="text" 
+              placeholder="Enter barcode or scan">
+            </ion-input>
+            <ion-button 
+              slot="end" 
+              fill="clear" 
+              (click)="scanBarcode()"
+              [disabled]="!isBarcodeScannerAvailable">
+              <ion-icon slot="icon-only" name="barcode"></ion-icon>
+            </ion-button>
+          </ion-item>
+          <ion-note *ngIf="!isBarcodeScannerAvailable" color="medium">
+            Barcode scanner not available in browser
+          </ion-note>
+        </ion-list>
+      </form>
+    </ion-content>
+    <ion-footer>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeModal()" fill="outline" color="medium">
+            Cancel
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <ion-button 
+            (click)="saveProduct()" 
+            [disabled]="!productForm.valid"
+            expand="block">
+            {{ isEditing ? 'Update' : 'Save' }} Product
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-footer>
+  </ng-template>
+</ion-modal>

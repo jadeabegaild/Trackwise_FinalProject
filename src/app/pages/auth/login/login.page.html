@@ -1,0 +1,84 @@
+<!-- <ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header> -->
+
+<ion-content class="ion-padding" [fullscreen]="true">
+  <div class="login-container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Welcome Back</ion-card-title>
+        <ion-card-subtitle>Sign in to your POS account</ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="login()">
+          <!-- Email Field -->
+          <ion-item class="ion-margin-bottom">
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input 
+              formControlName="email" 
+              type="email" 
+              placeholder="Enter your email"
+              required>
+            </ion-input>
+          </ion-item>
+
+          <!-- Validation Messages for Email -->
+          <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" 
+               class="validation-error">
+            <ion-text color="danger" *ngIf="loginForm.get('email')?.errors?.['required']">
+              Email is required
+            </ion-text>
+            <ion-text color="danger" *ngIf="loginForm.get('email')?.errors?.['email']">
+              Please enter a valid email
+            </ion-text>
+          </div>
+
+          <!-- Password Field -->
+          <ion-item class="ion-margin-bottom">
+            <ion-label position="stacked">Password</ion-label>
+            <ion-input 
+              formControlName="password" 
+              type="password" 
+              placeholder="Enter your password"
+              required>
+            </ion-input>
+          </ion-item>
+
+          <!-- Validation Messages for Password -->
+          <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" 
+               class="validation-error">
+            <ion-text color="danger" *ngIf="loginForm.get('password')?.errors?.['required']">
+              Password is required
+            </ion-text>
+          </div>
+
+          <!-- Login Button -->
+          <ion-button 
+            type="submit" 
+            expand="block" 
+            class="ion-margin-top"
+            [disabled]="!loginForm.valid">
+            Login
+          </ion-button>
+        </form>
+
+        <!-- Register Link -->
+        <div class="register-link ion-text-center ion-margin-top">
+          <ion-text color="medium">
+            Don't have an account? 
+            <ion-button 
+              routerLink="/register" 
+              fill="clear" 
+              size="small"
+              class="ion-no-padding">
+              Register here
+            </ion-button>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
