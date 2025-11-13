@@ -2,12 +2,8 @@ ion-content {
   --background: #f8f9fa;
 }
 
-.period-selector {
-  margin: 16px;
-}
-
 .stats-grid {
-  padding: 8px;
+  padding: 16px 8px 8px 8px;
 }
 
 .stat-card {
@@ -108,18 +104,115 @@ ion-content {
   
   ion-card-header {
     padding-bottom: 8px;
+    
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      
+      .chart-title {
+        flex: 1;
+        min-width: 200px;
+      }
+      
+      .chart-period-selector {
+        flex-shrink: 0;
+        max-width: 300px;
+        
+        ion-segment-button {
+          --padding-start: 8px;
+          --padding-end: 8px;
+          min-height: 32px;
+          
+          ion-label {
+            font-size: 0.8em;
+            font-weight: 500;
+          }
+        }
+      }
+    }
   }
   
   ion-card-title {
     font-size: 1.2em;
     font-weight: 600;
+    margin-bottom: 4px;
+  }
+  
+  ion-card-subtitle {
+    font-size: 0.9em;
+    opacity: 0.7;
+  }
+  
+  ion-card-content {
+    padding: 16px;
   }
 }
 
 .chart-container {
-  height: 300px;
+  height: 400px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chart-wrapper {
+  flex: 1;
   position: relative;
+  min-height: 300px;
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 8px;
+    display: block;
+  }
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  
+  .legend-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px;
+    
+    .legend-label {
+      font-size: 0.8em;
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    .legend-value {
+      font-size: 0.75em;
+      color: #6c757d;
+      font-weight: 500;
+    }
+  }
+}
+
+// Enhanced chart styling for better visualization
+.chart-card {
+  .chart-header {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+  }
 }
 
 .top-products-list {
@@ -238,7 +331,7 @@ ion-content {
 // Responsive adjustments
 @media (max-width: 768px) {
   .stats-grid {
-    padding: 4px;
+    padding: 12px 4px 4px 4px;
   }
   
   .stat-card {
@@ -247,5 +340,100 @@ ion-content {
   
   .chart-card {
     margin: 4px;
+    
+    ion-card-header {
+      .chart-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        
+        .chart-title {
+          min-width: auto;
+          text-align: center;
+        }
+        
+        .chart-period-selector {
+          max-width: none;
+        }
+      }
+    }
+  }
+  
+  .chart-period-selector {
+    ion-segment-button {
+      --padding-start: 4px;
+      --padding-end: 4px;
+      
+      ion-label {
+        font-size: 0.75em;
+      }
+    }
+  }
+  
+  .chart-container {
+    height: 350px;
+  }
+  
+  .chart-wrapper {
+    min-height: 250px;
+  }
+  
+  .chart-legend {
+    .legend-item {
+      min-width: 50px;
+      
+      .legend-label {
+        font-size: 0.75em;
+      }
+      
+      .legend-value {
+        font-size: 0.7em;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .chart-period-selector {
+    ion-segment-button {
+      min-height: 28px;
+      
+      ion-label {
+        font-size: 0.7em;
+      }
+    }
+  }
+  
+  .chart-container {
+    height: 300px;
+  }
+  
+  .chart-wrapper {
+    min-height: 200px;
+  }
+  
+  .chart-legend {
+    gap: 8px;
+    
+    .legend-item {
+      min-width: 45px;
+    }
+  }
+}
+
+// Additional responsive adjustments for very small screens
+@media (max-width: 360px) {
+  .chart-legend {
+    .legend-item {
+      min-width: 40px;
+      
+      .legend-label {
+        font-size: 0.7em;
+      }
+      
+      .legend-value {
+        font-size: 0.65em;
+      }
+    }
   }
 }

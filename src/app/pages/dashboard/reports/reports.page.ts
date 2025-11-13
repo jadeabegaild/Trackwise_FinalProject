@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import { ReportsService, Order, OrderItem } from '../../../services/reports';
+import { ProductService, Product } from '../../../services/product.service'; // Import ProductService
 
 interface SalesData {
   date: string;
@@ -11,6 +12,7 @@ interface InventoryMovement {
   productName: string;
   currentStock: number;
   change: number;
+  productId: string;
 }
 
 interface CSVRow {
@@ -29,12 +31,14 @@ interface CSVRow {
 })
 export class ReportsPage implements OnInit {
   private reportsService = inject(ReportsService);
+  private productService = inject(ProductService); // Inject ProductService
   
   @ViewChild('salesChartCanvas') salesChartCanvas!: ElementRef;
   
   // Add all the missing properties
   isLoading: boolean = true;
   orders: Order[] = [];
+  products: Product[] = []; // Add products array
   topProducts: any[] = [];
   totalSales: number = 0;
   avgTransaction: number = 0;
@@ -54,18 +58,30 @@ export class ReportsPage implements OnInit {
   loadReports() {
     this.isLoading = true;
     
+    // Load both orders and products
     this.reportsService.getOrders().subscribe({
       next: (orders) => {
         this.orders = orders;
         this.calculateReportData(orders);
         this.generateSalesTrendData();
-        this.generateInventoryMovement();
-        this.isLoading = false;
         
-        // Initialize chart after data is loaded
-        setTimeout(() => {
-          this.initializeChart();
-        }, 100);
+        // Load products for inventory data
+        this.productService.getProducts().subscribe({
+          next: (products) => {
+            this.products = products;
+            this.generateInventoryMovement(orders, products);
+            this.isLoading = false;
+            
+            // Initialize chart after data is loaded
+            setTimeout(() => {
+              this.initializeChart();
+            }, 100);
+          },
+          error: (error) => {
+            console.error('Error loading products:', error);
+            this.isLoading = false;
+          }
+        });
       },
       error: (error) => {
         console.error('Error loading reports:', error);
@@ -195,19 +211,41 @@ export class ReportsPage implements OnInit {
       .reduce((sum: number, order: Order) => sum + order.total, 0);
   }
 
-  private generateInventoryMovement() {
-    // This is a simplified version - you would typically get this from your inventory service
+  private generateInventoryMovement(orders: Order[], products: Product[]) {
     const movementData: InventoryMovement[] = [];
     
-    this.topProducts.forEach((product: any) => {
-      movementData.push({
-        productName: product.name,
-        currentStock: Math.floor(Math.random() * 100) + 10, // Mock data
-        change: Math.floor(Math.random() * 20) - 5 // Mock data: -5 to +15
+    // Calculate sales per product
+    const productSales = new Map<string, number>();
+    
+    orders.forEach((order: Order) => {
+      order.items.forEach((item: OrderItem) => {
+        const currentSales = productSales.get(item.id) || 0;
+        productSales.set(item.id, currentSales + item.quantity);
       });
     });
     
-    this.inventoryMovement = movementData.sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
+    // Create inventory movement data
+    products.forEach((product: Product) => {
+      if (!product.id) return;
+      
+      const totalSold = productSales.get(product.id) || 0;
+      const currentStock = product.quantity; // Use actual quantity from product
+      
+      // Calculate stock change (negative means stock decreased)
+      const change = -totalSold; // Sales reduce stock
+      
+      movementData.push({
+        productName: product.name,
+        currentStock: currentStock,
+        change: change,
+        productId: product.id
+      });
+    });
+    
+    // Sort by most movement (absolute value of change)
+    this.inventoryMovement = movementData
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .slice(0, 10); // Show top 10 movements
   }
 
   private initializeChart() {
@@ -219,6 +257,7 @@ export class ReportsPage implements OnInit {
     // Simple chart implementation using canvas
     const canvas = this.salesChartCanvas.nativeElement;
     const maxSales = Math.max(...this.salesData.map(d => d.amount));
+    const maxValue = maxSales > 0 ? maxSales : 1000; // Default max if no sales
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -231,11 +270,16 @@ export class ReportsPage implements OnInit {
     // Draw bars
     const barWidth = chartWidth / this.salesData.length;
     this.salesData.forEach((data: SalesData, index: number) => {
-      const barHeight = (data.amount / maxSales) * chartHeight;
+      const barHeight = (data.amount / maxValue) * chartHeight;
       const x = padding + (index * barWidth);
       const y = canvas.height - padding - barHeight;
       
-      ctx.fillStyle = '#6a11cb';
+      // Gradient fill
+      const gradient = ctx.createLinearGradient(0, y, 0, canvas.height - padding);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      
+      ctx.fillStyle = gradient;
       ctx.fillRect(x + 5, y, barWidth - 10, barHeight);
       
       // Draw label
@@ -245,8 +289,21 @@ export class ReportsPage implements OnInit {
       ctx.fillText(data.date, x + barWidth / 2, canvas.height - 20);
       
       // Draw value
-      ctx.fillText(this.formatCurrency(data.amount), x + barWidth / 2, y - 10);
+      if (data.amount > 0) {
+        ctx.fillText(this.formatCurrency(data.amount), x + barWidth / 2, y - 10);
+      }
     });
+    
+    // Draw zero line if no data
+    if (maxSales === 0) {
+      ctx.strokeStyle = '#ccc';
+      ctx.setLineDash([5, 3]);
+      ctx.beginPath();
+      ctx.moveTo(padding, canvas.height - padding);
+      ctx.lineTo(canvas.width - padding, canvas.height - padding);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
   }
 
   onPeriodChange() {
@@ -299,6 +356,26 @@ export class ReportsPage implements OnInit {
     }, []);
     
     return [headers, ...rows].map(row => row.join(',')).join('\n');
+  }
+
+  // Add inventory export
+  exportInventoryToExcel() {
+    const headers = ['Product Name', 'Current Stock', 'Stock Change', 'Product ID'];
+    const rows = this.inventoryMovement.map(movement => [
+      movement.productName,
+      movement.currentStock.toString(),
+      movement.change.toString(),
+      movement.productId
+    ]);
+    
+    const csvData = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `inventory-movement-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
   }
 
   // Add the missing formatCurrency method

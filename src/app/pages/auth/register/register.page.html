@@ -1,50 +1,168 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>Register</ion-title>
+  <ion-toolbar color="primary">
+    <ion-title>Create Account</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login"></ion-back-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <form [formGroup]="registerForm" (ngSubmit)="register()">
-    <ion-item>
-      <ion-label position="stacked">Business Name</ion-label>
-      <ion-input formControlName="businessName" type="text"></ion-input>
-    </ion-item>
+<ion-content class="ion-padding" color="light">
+  <div class="register-container">
+    <div class="header-section">
+      <ion-img src="/assets/icon/icon.png" class="logo" alt="App Logo"></ion-img>
+      <h1>Start Your Business Journey</h1>
+      <p>Create your account to manage your inventory and sales</p>
+    </div>
 
-    <ion-item>
-      <ion-label position="stacked">Email</ion-label>
-      <ion-input formControlName="email" type="email"></ion-input>
-    </ion-item>
+    <form [formGroup]="registerForm" (ngSubmit)="register()" class="form-container">
+      <!-- Business Name -->
+      <ion-item class="form-item" [class.invalid]="businessName?.invalid && businessName?.touched">
+        <ion-label position="stacked" class="input-label">
+          Business Name <span class="required">*</span>
+        </ion-label>
+        <ion-input 
+          formControlName="businessName" 
+          type="text" 
+          placeholder="Enter your business name"
+          class="custom-input">
+        </ion-input>
+        <ion-icon name="business-outline" slot="start" class="input-icon"></ion-icon>
+      </ion-item>
+      <div class="error-message" *ngIf="businessName?.invalid && businessName?.touched">
+        <ion-text color="danger" *ngIf="businessName?.errors?.['required']">
+          Business name is required
+        </ion-text>
+        <ion-text color="danger" *ngIf="businessName?.errors?.['minlength']">
+          Business name must be at least 2 characters
+        </ion-text>
+      </div>
 
-    <ion-item>
-      <ion-label position="stacked">Phone</ion-label>
-      <ion-input formControlName="phone" type="tel"></ion-input>
-    </ion-item>
+      <!-- Email -->
+      <ion-item class="form-item" [class.invalid]="email?.invalid && email?.touched">
+        <ion-label position="stacked" class="input-label">
+          Email Address <span class="required">*</span>
+        </ion-label>
+        <ion-input 
+          formControlName="email" 
+          type="email" 
+          placeholder="Enter your email"
+          class="custom-input">
+        </ion-input>
+        <ion-icon name="mail-outline" slot="start" class="input-icon"></ion-icon>
+      </ion-item>
+      <div class="error-message" *ngIf="email?.invalid && email?.touched">
+        <ion-text color="danger" *ngIf="email?.errors?.['required']">
+          Email is required
+        </ion-text>
+        <ion-text color="danger" *ngIf="email?.errors?.['email']">
+          Please enter a valid email address
+        </ion-text>
+      </div>
 
-    <ion-item>
-      <ion-label position="stacked">Password</ion-label>
-      <ion-input formControlName="password" type="password"></ion-input>
-    </ion-item>
+      <!-- Phone -->
+      <ion-item class="form-item" [class.invalid]="phone?.invalid && phone?.touched">
+        <ion-label position="stacked" class="input-label">
+          Phone Number <span class="required">*</span>
+        </ion-label>
+        <ion-input 
+          formControlName="phone" 
+          type="tel" 
+          placeholder="09XXXXXXXXX"
+          class="custom-input">
+        </ion-input>
+        <ion-icon name="call-outline" slot="start" class="input-icon"></ion-icon>
+      </ion-item>
+      <div class="error-message" *ngIf="phone?.invalid && phone?.touched">
+        <ion-text color="danger" *ngIf="phone?.errors?.['required']">
+          Phone number is required
+        </ion-text>
+        <ion-text color="danger" *ngIf="phone?.errors?.['pattern']">
+          Please enter a valid Philippine mobile number (09XXXXXXXXX)
+        </ion-text>
+      </div>
 
-    <ion-item>
-      <ion-label position="stacked">Confirm Password</ion-label>
-      <ion-input formControlName="confirmPassword" type="password"></ion-input>
-    </ion-item>
+      <!-- Password -->
+      <ion-item class="form-item" [class.invalid]="password?.invalid && password?.touched">
+        <ion-label position="stacked" class="input-label">
+          Password <span class="required">*</span>
+        </ion-label>
+        <ion-input 
+          formControlName="password" 
+          [type]="showPassword ? 'text' : 'password'" 
+          placeholder="Enter your password"
+          class="custom-input">
+        </ion-input>
+        <ion-icon name="lock-closed-outline" slot="start" class="input-icon"></ion-icon>
+        <ion-button 
+          fill="clear" 
+          slot="end" 
+          (click)="togglePasswordVisibility()"
+          class="visibility-toggle">
+          <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div class="error-message" *ngIf="password?.invalid && password?.touched">
+        <ion-text color="danger" *ngIf="password?.errors?.['required']">
+          Password is required
+        </ion-text>
+        <ion-text color="danger" *ngIf="password?.errors?.['minlength']">
+          Password must be at least 6 characters
+        </ion-text>
+      </div>
 
-    <ion-button 
-      type="submit" 
-      expand="block" 
-      [disabled]="!registerForm.valid"
-      class="ion-margin-top">
-      Register
-    </ion-button>
+      <!-- Confirm Password -->
+      <ion-item class="form-item" [class.invalid]="confirmPassword?.invalid && confirmPassword?.touched">
+        <ion-label position="stacked" class="input-label">
+          Confirm Password <span class="required">*</span>
+        </ion-label>
+        <ion-input 
+          formControlName="confirmPassword" 
+          [type]="showConfirmPassword ? 'text' : 'password'" 
+          placeholder="Confirm your password"
+          class="custom-input">
+        </ion-input>
+        <ion-icon name="lock-closed-outline" slot="start" class="input-icon"></ion-icon>
+        <ion-button 
+          fill="clear" 
+          slot="end" 
+          (click)="toggleConfirmPasswordVisibility()"
+          class="visibility-toggle">
+          <ion-icon [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        </ion-button>
+      </ion-item>
+      <div class="error-message" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+        <ion-text color="danger" *ngIf="confirmPassword?.errors?.['required']">
+          Please confirm your password
+        </ion-text>
+        <ion-text color="danger" *ngIf="confirmPassword?.errors?.['mismatch']">
+          Passwords do not match
+        </ion-text>
+      </div>
 
-    <ion-button 
-      routerLink="/login"
-      expand="block" 
-      fill="clear"
-      class="ion-margin-top">
-      Already have an account? Login
-    </ion-button>
-  </form>
+      <!-- Submit Button -->
+      <ion-button 
+        type="submit" 
+        expand="block" 
+        [disabled]="!registerForm.valid"
+        class="register-button ion-margin-top"
+        shape="round">
+        <ion-icon name="person-add-outline" slot="start"></ion-icon>
+        Create Account
+      </ion-button>
+
+      <!-- Login Link -->
+      <div class="login-link">
+        <p>Already have an account?</p>
+        <ion-button 
+          routerLink="/login"
+          expand="block" 
+          fill="clear"
+          class="login-button">
+          <ion-icon name="log-in-outline" slot="start"></ion-icon>
+          Sign In
+        </ion-button>
+      </div>
+    </form>
+  </div>
 </ion-content>

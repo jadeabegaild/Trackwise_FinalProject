@@ -17,19 +17,6 @@
   </div>
 
   <div *ngIf="!isLoading">
-    <!-- Period Selector -->
-    <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange()" class="period-selector">
-      <ion-segment-button value="today">
-        <ion-label>Today</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="weekly">
-        <ion-label>Weekly</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="monthly">
-        <ion-label>Monthly</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
     <!-- Stats Overview Cards -->
     <ion-grid class="stats-grid">
       <ion-row>
@@ -113,12 +100,35 @@
         <ion-col size="12" size-lg="8">
           <ion-card class="chart-card">
             <ion-card-header>
-              <ion-card-title>Sales Overview</ion-card-title>
-              <ion-card-subtitle>{{ getPeriodLabel() }} Performance</ion-card-subtitle>
+              <div class="chart-header">
+                <div class="chart-title">
+                  <ion-card-title>Sales Overview</ion-card-title>
+                  <ion-card-subtitle>{{ getPeriodLabel() }} Performance</ion-card-subtitle>
+                </div>
+                <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange()" class="chart-period-selector">
+                  <ion-segment-button value="today">
+                    <ion-label>Today</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="weekly">
+                    <ion-label>Weekly</ion-label>
+                  </ion-segment-button>
+                  <ion-segment-button value="monthly">
+                    <ion-label>Monthly</ion-label>
+                  </ion-segment-button>
+                </ion-segment>
+              </div>
             </ion-card-header>
             <ion-card-content>
               <div class="chart-container">
-                <canvas #salesChartCanvas></canvas>
+                <div class="chart-wrapper">
+                  <canvas #salesChartCanvas></canvas>
+                </div>
+                <div class="chart-legend" *ngIf="salesChartData.length > 0">
+                  <div class="legend-item" *ngFor="let data of salesChartData">
+                    <span class="legend-label">{{ data.label }}</span>
+                    <span class="legend-value">{{ formatCurrency(data.sales) }}</span>
+                  </div>
+                </div>
               </div>
             </ion-card-content>
           </ion-card>

@@ -67,6 +67,21 @@ export class InventoryPage implements OnInit, OnDestroy {
     }
   }
 
+  // ADD THIS METHOD - Get current user ID
+  private getCurrentUserId(): string {
+    // Replace this with your actual user ID retrieval logic
+    // Examples:
+    
+    // If using Firebase Auth:
+    // return this.auth.currentUser?.uid || 'default-user-id';
+    
+    // If using a service:
+    // return this.authService.getCurrentUserId();
+    
+    // For now, using a placeholder - update this with your actual implementation
+    return 'default-user-id';
+  }
+
   getStockStatus(quantity: number): { label: string, color: string } {
     if (quantity === 0) {
       return { label: 'Out of Stock', color: 'danger' };
@@ -209,7 +224,8 @@ export class InventoryPage implements OnInit, OnDestroy {
             quantity: formValue.quantity,
             category: formValue.category,
             barcode: formValue.barcode || this.generateBarcode(),
-            image: formValue.image
+            image: formValue.image,
+            userId: this.getCurrentUserId() // Now this will work
           };
           await this.productService.addProduct(newProduct);
         }

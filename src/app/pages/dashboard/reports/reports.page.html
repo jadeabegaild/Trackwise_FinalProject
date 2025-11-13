@@ -19,20 +19,6 @@
     <p>Loading reports...</p>
   </div>
 
-  <!-- Analytics Period Selector -->
-  <div *ngIf="!isLoading">
-    <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange()">
-      <ion-segment-button value="daily">
-        <ion-label>Daily</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="weekly">
-        <ion-label>Weekly</ion-label>
-      </ion-segment-button>
-      <ion-segment-button value="monthly">
-        <ion-label>Monthly</ion-label>
-      </ion-segment-button>
-    </ion-segment>
-
     <!-- Sales Overview Cards -->
     <ion-grid>
       <ion-row>
@@ -74,17 +60,6 @@
       </ion-row>
     </ion-grid>
 
-    <!-- Sales Trend Chart -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Sales Trend - {{ getPeriodLabel() }}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <div class="chart-container">
-          <canvas #salesChartCanvas></canvas>
-        </div>
-      </ion-card-content>
-    </ion-card>
 
     <!-- Top Products Section -->
     <ion-card>
@@ -163,5 +138,4 @@
         </div>
       </ion-card-content>
     </ion-card>
-  </div>
 </ion-content>

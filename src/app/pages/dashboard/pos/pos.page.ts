@@ -2,11 +2,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { ProductService, Product } from '../../../services/product.service';
 import { ReportsService, Order } from '../../../services/reports';
-
 import { Subscription } from 'rxjs';
 
 interface CartItem extends Product {
-  quantity: number;
+  cartQuantity: number;
 }
 
 @Component({
@@ -34,7 +33,7 @@ export class PosPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     const loading = await this.loadingController.create({
-      message: 'Loading products...'
+      message: 'Loading products...',
     });
     await loading.present();
 
@@ -69,25 +68,31 @@ export class PosPage implements OnInit, OnDestroy {
   }
 
   applyFilters() {
-    this.filteredProducts = this.products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(this.searchTerm);
-      const matchesCategory = this.selectedCategory === 'all' || product.category === this.selectedCategory;
+    this.filteredProducts = this.products.filter((product) => {
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(this.searchTerm);
+      const matchesCategory =
+        this.selectedCategory === 'all' ||
+        product.category === this.selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }
 
   addToCart(product: Product) {
-    const existingItem = this.cartItems.find(item => item.id === product.id);
-    
+    const existingItem = this.cartItems.find((item) => item.id === product.id);
+
     if (existingItem) {
-      if (existingItem.quantity < product.quantity) {
-        existingItem.quantity++;
+      if (existingItem.cartQuantity < product.quantity) {
+        // Use quantity field for stock
+        existingItem.cartQuantity++;
       } else {
         this.presentErrorAlert('Not enough stock available');
       }
     } else {
       if (product.quantity > 0) {
-        this.cartItems.push({ ...product, quantity: 1 });
+        // Use quantity field for stock
+        this.cartItems.push({ ...product, cartQuantity: 1 });
       } else {
         this.presentErrorAlert('Product is out of stock');
       }
@@ -100,9 +105,10 @@ export class PosPage implements OnInit, OnDestroy {
 
   increaseQuantity(index: number) {
     const item = this.cartItems[index];
-    const product = this.products.find(p => p.id === item.id);
-    if (product && item.quantity < product.quantity) {
-      item.quantity++;
+    const product = this.products.find((p) => p.id === item.id);
+    if (product && item.cartQuantity < product.quantity) {
+      // Use quantity field for stock
+      item.cartQuantity++;
     } else {
       this.presentErrorAlert('Not enough stock available');
     }
@@ -110,8 +116,8 @@ export class PosPage implements OnInit, OnDestroy {
 
   decreaseQuantity(index: number) {
     const item = this.cartItems[index];
-    if (item.quantity > 1) {
-      item.quantity--;
+    if (item.cartQuantity > 1) {
+      item.cartQuantity--;
     } else {
       this.removeFromCart(index);
     }
@@ -122,7 +128,10 @@ export class PosPage implements OnInit, OnDestroy {
   }
 
   getSubtotal(): number {
-    return this.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+    return this.cartItems.reduce(
+      (total, item) => total + item.price * item.cartQuantity,
+      0
+    );
   }
 
   getTax(): number {
@@ -148,24 +157,25 @@ export class PosPage implements OnInit, OnDestroy {
     }
 
     const loading = await this.loadingController.create({
-      message: 'Processing checkout...'
+      message: 'Processing checkout...',
     });
     await loading.present();
 
     try {
       // Save order to reports
       const orderData: Partial<Order> = {
-        items: this.cartItems.map(item => ({
+        items: this.cartItems.map((item) => ({
           id: item.id || '',
           name: item.name,
           price: item.price,
-          quantity: item.quantity,
-          image: item.image
+          quantity: item.cartQuantity,
+          image: item.image,
         })),
         subtotal: this.getSubtotal(),
         tax: this.getTax(),
         total: this.getTotal(),
-        status: 'completed'
+        status: 'completed',
+        // userId will be added automatically by the service
       };
 
       await this.reportsService.saveOrder(orderData);
@@ -173,30 +183,40 @@ export class PosPage implements OnInit, OnDestroy {
       // Update stock levels in Firebase
       const updatePromises = this.cartItems.map(async (cartItem) => {
         if (!cartItem.id) return;
-        
-        const product = this.products.find(p => p.id === cartItem.id);
+
+        const product = this.products.find((p) => p.id === cartItem.id);
         if (product) {
-          const newQuantity = product.quantity - cartItem.quantity;
-          await this.productService.updateProductQuantity(cartItem.id, newQuantity);
+          const newQuantity = product.quantity - cartItem.cartQuantity;
+          await this.productService.updateProductQuantity(
+            cartItem.id,
+            newQuantity
+          );
         }
       });
 
       await Promise.all(updatePromises);
 
+      // Update local products array to reflect stock changes
+      this.cartItems.forEach((cartItem) => {
+        const product = this.products.find((p) => p.id === cartItem.id);
+        if (product) {
+          product.quantity -= cartItem.cartQuantity;
+        }
+      });
+
       await loading.dismiss();
-      
+
       // Show success message
       const alert = await this.alertController.create({
         header: 'Checkout Successful',
-        message: `Total: ₱${this.getTotal().toFixed(2)}`,
-        buttons: ['OK']
+        message: `Total: ${this.formatCurrency(this.getTotal())}`,
+        buttons: ['OK'],
       });
       await alert.present();
 
       // Clear cart and close modal
       this.clearCart();
       this.closeCart();
-      
     } catch (error) {
       console.error('Error during checkout:', error);
       await loading.dismiss();
@@ -204,11 +224,18 @@ export class PosPage implements OnInit, OnDestroy {
     }
   }
 
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP',
+    }).format(amount);
+  }
+
   private async presentErrorAlert(message: string) {
     const alert = await this.alertController.create({
       header: 'Error',
       message: message,
-      buttons: ['OK']
+      buttons: ['OK'],
     });
     await alert.present();
   }
