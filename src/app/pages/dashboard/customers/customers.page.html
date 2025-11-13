@@ -1,13 +1,179 @@
-<ion-header [translucent]="true">
+<ion-header>
   <ion-toolbar>
-    <ion-title>customers</ion-title>
+    <ion-title>Dashboard</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refreshData()" [disabled]="isLoading">
+        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">customers</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="isLoading">
+    <ion-spinner name="crescent"></ion-spinner>
+    <p>Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="!isLoading">
+    <!-- Period Selector -->
+    <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange()" class="period-selector">
+      <ion-segment-button value="today">
+        <ion-label>Today</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="weekly">
+        <ion-label>Weekly</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="monthly">
+        <ion-label>Monthly</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <!-- Stats Overview Cards -->
+    <ion-grid class="stats-grid">
+      <ion-row>
+        <!-- Total Sales -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card sales-card">
+            <ion-card-header>
+              <div class="card-icon">
+                <ion-icon name="cash-outline"></ion-icon>
+              </div>
+              <ion-card-title>{{ formatCurrency(salesData.totalSales) }}</ion-card-title>
+              <ion-card-subtitle>Total Sales</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="trend" [class.positive]="salesData.trend >= 0" [class.negative]="salesData.trend < 0">
+                <ion-icon [name]="salesData.trend >= 0 ? 'trending-up' : 'trending-down'"></ion-icon>
+                <span>{{ Math.abs(salesData.trend) }}%</span>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Total Products -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card products-card">
+            <ion-card-header>
+              <div class="card-icon">
+                <ion-icon name="cube-outline"></ion-icon>
+              </div>
+              <ion-card-title>{{ inventoryData.totalProducts }}</ion-card-title>
+              <ion-card-subtitle>Total Products</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="sub-text">{{ inventoryData.inStock }} in stock</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Low Stock Alerts -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card alert-card">
+            <ion-card-header>
+              <div class="card-icon">
+                <ion-icon name="warning-outline"></ion-icon>
+              </div>
+              <ion-card-title>{{ inventoryData.lowStockCount }}</ion-card-title>
+              <ion-card-subtitle>Low Stock</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="sub-text" *ngIf="inventoryData.lowStockCount > 0">Needs attention</div>
+              <div class="sub-text" *ngIf="inventoryData.lowStockCount === 0">All good</div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Total Orders -->
+        <ion-col size="12" size-md="6" size-lg="3">
+          <ion-card class="stat-card orders-card">
+            <ion-card-header>
+              <div class="card-icon">
+                <ion-icon name="cart-outline"></ion-icon>
+              </div>
+              <ion-card-title>{{ salesData.totalOrders }}</ion-card-title>
+              <ion-card-subtitle>Total Orders</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="trend" [class.positive]="salesData.orderTrend >= 0" [class.negative]="salesData.orderTrend < 0">
+                <ion-icon [name]="salesData.orderTrend >= 0 ? 'trending-up' : 'trending-down'"></ion-icon>
+                <span>{{ Math.abs(salesData.orderTrend) }}%</span>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Charts Section -->
+    <ion-grid class="charts-grid">
+      <ion-row>
+        <!-- Sales Chart -->
+        <ion-col size="12" size-lg="8">
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>Sales Overview</ion-card-title>
+              <ion-card-subtitle>{{ getPeriodLabel() }} Performance</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="chart-container">
+                <canvas #salesChartCanvas></canvas>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+
+        <!-- Top Products Chart -->
+        <ion-col size="12" size-lg="4">
+          <ion-card class="chart-card">
+            <ion-card-header>
+              <ion-card-title>Top Products</ion-card-title>
+              <ion-card-subtitle>Best Sellers</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content>
+              <div class="top-products-list">
+                <div class="product-item" *ngFor="let product of topProducts; let i = index">
+                  <div class="product-rank">#{{ i + 1 }}</div>
+                  <div class="product-info">
+                    <div class="product-name">{{ product.name }}</div>
+                    <div class="product-sales">{{ product.quantity }} sold</div>
+                  </div>
+                  <div class="product-amount">{{ formatCurrency(product.total) }}</div>
+                </div>
+              </div>
+              
+              <div class="empty-state" *ngIf="topProducts.length === 0">
+                <ion-icon name="stats-chart-outline"></ion-icon>
+                <h3>No sales data</h3>
+                <p>Sales data will appear here</p>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+
+    <!-- Low Stock Alerts Section -->
+    <ion-card class="alerts-card" *ngIf="inventoryData.lowStockItems.length > 0">
+      <ion-card-header>
+        <ion-card-title>
+          <ion-icon name="warning" color="warning"></ion-icon>
+          Low Stock Alerts
+        </ion-card-title>
+        <ion-card-subtitle>Products needing restock</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list lines="none">
+          <ion-item *ngFor="let item of inventoryData.lowStockItems" class="alert-item">
+            <ion-label>
+              <h3>{{ item.name }}</h3>
+              <p>Current stock: {{ item.currentStock }}</p>
+            </ion-label>
+            <ion-badge slot="end" color="warning">Low</ion-badge>
+          </ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>

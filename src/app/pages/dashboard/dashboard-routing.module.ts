@@ -8,6 +8,10 @@ const routes: Routes = [
     component: DashboardPage,
     children: [
       {
+        path: 'customers',
+        loadChildren: () => import('./customers/customers.module').then(m => m.CustomersPageModule)
+      },
+      {
         path: 'pos',
         loadChildren: () => import('./pos/pos.module').then(m => m.PosPageModule)
       },
@@ -19,17 +23,10 @@ const routes: Routes = [
         path: 'reports',
         loadChildren: () => import('./reports/reports.module').then(m => m.ReportPageModule)
       },
-      {
-        path: 'customers',
-        loadChildren: () => import('./customers/customers.module').then(m => m.CustomersPageModule)
-      },
-      {
-        path: 'more',
-        loadChildren: () => import('./more/more.module').then(m => m.MorePageModule)
-      },
+      
       {
         path: '',
-        redirectTo: 'pos',
+        redirectTo: 'customers',
         pathMatch: 'full'
       }
     ]

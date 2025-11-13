@@ -1,0 +1,251 @@
+ion-content {
+  --background: #f8f9fa;
+}
+
+.period-selector {
+  margin: 16px;
+}
+
+.stats-grid {
+  padding: 8px;
+}
+
+.stat-card {
+  margin: 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+    
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      
+      ion-icon {
+        font-size: 24px;
+        color: white;
+      }
+    }
+  }
+  
+  ion-card-title {
+    font-size: 1.5em;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  
+  ion-card-subtitle {
+    font-size: 0.9em;
+    opacity: 0.8;
+    font-weight: 500;
+  }
+  
+  ion-card-content {
+    padding-top: 0;
+    
+    .trend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.85em;
+      font-weight: 600;
+      
+      &.positive {
+        color: var(--ion-color-success);
+      }
+      
+      &.negative {
+        color: var(--ion-color-danger);
+      }
+    }
+    
+    .sub-text {
+      font-size: 0.85em;
+      opacity: 0.7;
+    }
+  }
+}
+
+// Card color variants
+.sales-card {
+  .card-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+}
+
+.products-card {
+  .card-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+}
+
+.alert-card {
+  .card-icon {
+    background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  }
+}
+
+.orders-card {
+  .card-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+}
+
+.charts-grid {
+  padding: 8px;
+}
+
+.chart-card {
+  margin: 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  ion-card-header {
+    padding-bottom: 8px;
+  }
+  
+  ion-card-title {
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+}
+
+.chart-container {
+  height: 300px;
+  width: 100%;
+  position: relative;
+}
+
+.top-products-list {
+  .product-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--ion-color-light);
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .product-rank {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--ion-color-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.9em;
+      margin-right: 12px;
+    }
+    
+    .product-info {
+      flex: 1;
+      
+      .product-name {
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      
+      .product-sales {
+        font-size: 0.8em;
+        opacity: 0.7;
+      }
+    }
+    
+    .product-amount {
+      font-weight: 600;
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+.alerts-card {
+  margin: 16px 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  
+  ion-card-header {
+    ion-card-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.2em;
+    }
+  }
+  
+  .alert-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+    
+    h3 {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    p {
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  
+  ion-spinner {
+    margin-bottom: 16px;
+  }
+  
+  p {
+    margin: 0;
+    opacity: 0.7;
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--ion-color-medium);
+  
+  ion-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+  
+  h3 {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .stats-grid {
+    padding: 4px;
+  }
+  
+  .stat-card {
+    margin: 4px;
+  }
+  
+  .chart-card {
+    margin: 4px;
+  }
+}
