@@ -5,13 +5,13 @@
 export const environment = {
   production: false,
   firebase: {
-    apiKey: 'AIzaSyBRRrJf9fIntfb7mCMocJbHKA5GuSKqAG4',
-    authDomain: 'trackwise-7b290.firebaseapp.com',
-    projectId: 'trackwise-7b290',
-    storageBucket: 'trackwise-7b290.firebasestorage.app',
-    messagingSenderId: '264359455431',
-    appId: '1:264359455431:web:e0f57901be38024d72ace2',
-    measurementId: 'G-Y6JLLDCTKK',
+    apiKey: 'AIzaSyCGpTKU8YmjqeHzatLwxnbJfp5qdp-CZUk',
+    authDomain: 'trackwise-final.firebaseapp.com',
+    projectId: 'trackwise-final',
+    storageBucket: 'trackwise-final.firebasestorage.app',
+    messagingSenderId: '621168030402',
+    appId: '1:621168030402:web:364c0553fdd5c7f536815b',
+    measurementId: 'G-13PDGQDZWP',
   },
 };
 
