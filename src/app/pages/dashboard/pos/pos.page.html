@@ -1,138 +1,282 @@
+<!-- pos.page.html -->
 <ion-header>
-  <ion-toolbar>
-    <ion-title>Point of Sale</ion-title>
+  <ion-toolbar class="modern-toolbar">
+    
+    <ion-title class="page-title">
+      <div class="title-content">
+        <h1>Point of Sale</h1>
+        <!-- <p class="page-subtitle">Quick and easy checkout</p> -->
+      </div>
+    </ion-title>
+    
     <ion-buttons slot="end">
-      <ion-button (click)="openCart()">
-        <ion-icon slot="icon-only" name="cart"></ion-icon>
-        <ion-badge color="danger" *ngIf="cartItems.length > 0">{{cartItems.length}}</ion-badge>
+      <ion-button class="cart-button" (click)="openCart()">
+        <div class="cart-icon-container">
+          <i class="fas fa-shopping-cart"></i>
+          <ion-badge color="danger" class="cart-badge" *ngIf="cartItems.length > 0">
+            {{cartItems.length}}
+          </ion-badge>
+        </div>
       </ion-button>
+      
+      <!-- <ion-button class="user-button">
+        <ion-avatar class="user-avatar">
+          <img src="assets/images/user-avatar.png" alt="User" />
+        </ion-avatar>
+      </ion-button> -->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <!-- Search and Categories -->
-  <ion-toolbar>
-    <ion-searchbar placeholder="Search products..." (ionInput)="searchProducts($event)"></ion-searchbar>
-  </ion-toolbar>
+<ion-content class="modern-pos-content">
+  <!-- Search Section -->
+  <section class="search-section">
+    <div class="search-container">
+      <div class="search-box">
+        <!-- <i class="fas fa-search search-icon"></i> -->
+        <ion-searchbar 
+          placeholder="Search products..." 
+          (ionInput)="searchProducts($event)"
+          class="modern-searchbar">
+        </ion-searchbar>
+      </div>
+      
+      <!-- <ion-button class="filter-button" fill="outline">
+        <i class="fas fa-sliders-h"></i>
+      </ion-button> -->
+    </div>
+  </section>
 
-  <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)">
-    <ion-segment-button value="all">
-      <ion-label>All</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="electronics">
-      <ion-label>Electronics</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="clothing">
-      <ion-label>Clothing</ion-label>
-    </ion-segment-button>
-    <ion-segment-button value="food">
-      <ion-label>Food</ion-label>
-    </ion-segment-button>
-  </ion-segment>
+  <!-- Categories Section -->
+  <section class="categories-section">
+    <div class="categories-container">
+      <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)" class="modern-segment">
+        <ion-segment-button value="all" class="category-btn">
+          <div class="category-content">
+            <i class="fas fa-th-large"></i>
+            <ion-label>All</ion-label>
+          </div>
+        </ion-segment-button>
+        
+        <ion-segment-button value="electronics" class="category-btn">
+          <div class="category-content">
+            <i class="fas fa-laptop"></i>
+            <ion-label>Electronics</ion-label>
+          </div>
+        </ion-segment-button>
+        
+        <ion-segment-button value="clothing" class="category-btn">
+          <div class="category-content">
+            <i class="fas fa-tshirt"></i>
+            <ion-label>Clothing</ion-label>
+          </div>
+        </ion-segment-button>
+        
+        <ion-segment-button value="food" class="category-btn">
+          <div class="category-content">
+            <i class="fas fa-utensils"></i>
+            <ion-label>Food</ion-label>
+          </div>
+        </ion-segment-button>
+      </ion-segment>
+    </div>
+  </section>
 
   <!-- Products Grid -->
-  <ion-grid>
-    <ion-row>
-      <ion-col size="6" size-md="4" size-lg="3" *ngFor="let product of filteredProducts">
-        <ion-card class="product-card" (click)="addToCart(product)">
-          <div class="image-container">
-            <ion-img [src]="product.image" [alt]="product.name"></ion-img>
-          </div>
-          <ion-card-header>
-            <ion-card-title>{{product.name}}</ion-card-title>
-            <ion-card-subtitle>{{product.category}}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <div class="price">₱{{product.price | number:'1.2-2'}}</div>
-            <div class="stock" [class.low-stock]="product.quantity < 10">
-              Stock: {{product.quantity}}
+  <section class="products-section">
+    <div class="section-header">
+      <h2>Available Products</h2>
+      <p>{{filteredProducts.length}} products found</p>
+    </div>
+    
+    <ion-grid class="products-grid">
+      <ion-row>
+        <ion-col size="6" size-md="4" size-lg="3" *ngFor="let product of filteredProducts">
+          <ion-card class="modern-product-card" (click)="addToCart(product)">
+            <div class="product-badge" *ngIf="product.quantity < 10">
+              <i class="fas fa-exclamation-circle"></i>
+              Low Stock
             </div>
-          </ion-card-content>
-        </ion-card>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+            
+            <div class="image-container">
+              <ion-img [src]="product.image" [alt]="product.name" class="product-image"></ion-img>
+              <div class="image-overlay">
+                <i class="fas fa-cart-plus"></i>
+              </div>
+            </div>
+            
+            <ion-card-header class="product-header">
+              <ion-card-title class="product-name">{{product.name}}</ion-card-title>
+              <ion-card-subtitle class="product-category">
+                <i class="fas fa-tag"></i>
+                {{product.category}}
+              </ion-card-subtitle>
+            </ion-card-header>
+            
+            <ion-card-content class="product-content">
+              <div class="price-section">
+                <div class="price">₱{{product.price | number:'1.2-2'}}</div>
+                <div class="stock" [class.low-stock]="product.quantity < 10">
+                  <i class="fas fa-box"></i>
+                  {{product.quantity}} in stock
+                </div>
+              </div>
+              
+              <ion-button class="add-to-cart-btn" fill="solid" size="small">
+                <i class="fas fa-plus"></i>
+                Add to Cart
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
 
-  <!-- Empty State -->
-  <div class="empty-state" *ngIf="filteredProducts.length === 0">
-    <ion-icon name="search-outline"></ion-icon>
-    <h3>No products found</h3>
-    <p>Try adjusting your search or filter</p>
-  </div>
+    <!-- Empty State -->
+    <div class="modern-empty-state" *ngIf="filteredProducts.length === 0">
+      <div class="empty-icon">
+        <i class="fas fa-search"></i>
+      </div>
+      <h3>No products found</h3>
+      <p>Try adjusting your search or filter criteria</p>
+      <ion-button fill="solid" class="reset-filters-btn">
+        <i class="fas fa-redo"></i>
+        Reset Filters
+      </ion-button>
+    </div>
+  </section>
 </ion-content>
 
-<!-- Cart Modal -->
-<ion-modal [isOpen]="isCartOpen" (didDismiss)="closeCart()">
+<!-- Enhanced Cart Modal -->
+<ion-modal [isOpen]="isCartOpen" (didDismiss)="closeCart()" class="modern-cart-modal">
   <ng-template>
-    <ion-header>
+    <ion-header class="cart-header">
       <ion-toolbar>
-        <ion-title>Shopping Cart</ion-title>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeCart()" class="close-btn">
+            <i class="fas fa-arrow-left"></i>
+          </ion-button>
+        </ion-buttons>
+        
+        <ion-title class="cart-title">
+          <div class="title-with-badge">
+            <h2>Shopping Cart</h2>
+            <ion-badge color="primary" *ngIf="cartItems.length > 0">
+              {{cartItems.length}} items
+            </ion-badge>
+          </div>
+        </ion-title>
+        
         <ion-buttons slot="end">
-          <ion-button (click)="closeCart()">Close</ion-button>
+          <ion-button (click)="clearCart()" class="clear-btn" *ngIf="cartItems.length > 0">
+            <i class="fas fa-trash"></i>
+          </ion-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
-      <ion-list>
-        <ion-item *ngFor="let item of cartItems; let i = index">
-          <ion-thumbnail slot="start">
-            <ion-img [src]="item.image"></ion-img>
-          </ion-thumbnail>
-          <ion-label>
-            <h3>{{item.name}}</h3>
-            <p>₱{{item.price | number:'1.2-2'}} x {{item.quantity}}</p>
-          </ion-label>
-          <ion-note slot="end">₱{{(item.price * item.quantity) | number:'1.2-2'}}</ion-note>
-          <ion-buttons slot="end">
-            <ion-button (click)="decreaseQuantity(i)" color="medium">
-              <ion-icon name="remove"></ion-icon>
-            </ion-button>
-            <ion-button (click)="increaseQuantity(i)" color="primary">
-              <ion-icon name="add"></ion-icon>
-            </ion-button>
-            <ion-button (click)="removeFromCart(i)" color="danger">
-              <ion-icon name="trash"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-item>
-      </ion-list>
-
-      <div class="empty-state" *ngIf="cartItems.length === 0">
-        <ion-icon name="cart-outline"></ion-icon>
-        <h3>Your cart is empty</h3>
-        <p>Add some products to get started</p>
+    
+    <ion-content class="cart-content">
+      <!-- Cart Items -->
+      <div class="cart-items-section" *ngIf="cartItems.length > 0">
+        <div class="section-label">
+          <i class="fas fa-shopping-basket"></i>
+          Cart Items
+        </div>
+        
+        <ion-list class="modern-cart-list">
+          <ion-item *ngFor="let item of cartItems; let i = index" class="cart-item">
+            <ion-avatar slot="start" class="item-avatar">
+              <ion-img [src]="item.image"></ion-img>
+            </ion-avatar>
+            
+            <ion-label class="item-details">
+              <h3 class="item-name">{{item.name}}</h3>
+              <p class="item-price">₱{{item.price | number:'1.2-2'}} each</p>
+              <div class="quantity-controls">
+                <ion-button (click)="decreaseQuantity(i)" class="qty-btn" fill="clear" size="small">
+                  <i class="fas fa-minus"></i>
+                </ion-button>
+                
+                <span class="quantity-display">{{item.quantity}}</span>
+                
+                <ion-button (click)="increaseQuantity(i)" class="qty-btn" fill="clear" size="small">
+                  <i class="fas fa-plus"></i>
+                </ion-button>
+              </div>
+            </ion-label>
+            
+            <div class="item-total">
+              <div class="total-amount">₱{{(item.price * item.quantity) | number:'1.2-2'}}</div>
+              <ion-button (click)="removeFromCart(i)" class="remove-btn" fill="clear" size="small">
+                <i class="fas fa-times"></i>
+              </ion-button>
+            </div>
+          </ion-item>
+        </ion-list>
       </div>
 
-      <ion-card *ngIf="cartItems.length > 0">
+      <!-- Empty Cart State -->
+      <div class="modern-empty-cart" *ngIf="cartItems.length === 0">
+        <div class="empty-cart-icon">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <h3>Your cart is empty</h3>
+        <p>Add some products to get started</p>
+        <ion-button (click)="closeCart()" fill="solid" class="continue-shopping-btn">
+          <i class="fas fa-shopping-bag"></i>
+          Continue Shopping
+        </ion-button>
+      </div>
+
+      <!-- Order Summary -->
+      <ion-card class="order-summary-card" *ngIf="cartItems.length > 0">
+        <ion-card-header>
+          <ion-card-title>
+            <i class="fas fa-receipt"></i>
+            Order Summary
+          </ion-card-title>
+        </ion-card-header>
+        
         <ion-card-content>
-          <ion-item>
-            <ion-label>Subtotal</ion-label>
-            <ion-note>₱{{getSubtotal() | number:'1.2-2'}}</ion-note>
-          </ion-item>
-          <ion-item>
-            <ion-label>Tax (12%)</ion-label>
-            <ion-note>₱{{getTax() | number:'1.2-2'}}</ion-note>
-          </ion-item>
-          <ion-item>
-            <ion-label><strong>Total</strong></ion-label>
-            <ion-note><strong>₱{{getTotal() | number:'1.2-2'}}</strong></ion-note>
-          </ion-item>
+          <div class="summary-item">
+            <span class="summary-label">Subtotal</span>
+            <span class="summary-value">₱{{getSubtotal() | number:'1.2-2'}}</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Tax (12%)</span>
+            <span class="summary-value">₱{{getTax() | number:'1.2-2'}}</span>
+          </div>
+          
+          <div class="summary-divider"></div>
+          
+          <div class="summary-item total">
+            <span class="summary-label">Total Amount</span>
+            <span class="summary-value total-amount">₱{{getTotal() | number:'1.2-2'}}</span>
+          </div>
         </ion-card-content>
       </ion-card>
     </ion-content>
-    <ion-footer *ngIf="cartItems.length > 0">
+    
+    <ion-footer *ngIf="cartItems.length > 0" class="cart-footer">
       <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-button (click)="clearCart()" color="danger" fill="outline">
-            Clear All
-          </ion-button>
-        </ion-buttons>
-        <ion-buttons slot="end">
-          <ion-button (click)="checkout()" expand="block">
-            Checkout ₱{{getTotal() | number:'1.2-2'}}
-          </ion-button>
-        </ion-buttons>
+        <ion-grid class="footer-grid">
+          <ion-row>
+            <ion-col size="8">
+              <div class="total-display">
+                <div class="total-label">Total</div>
+                <div class="total-price">₱{{getTotal() | number:'1.2-2'}}</div>
+              </div>
+            </ion-col>
+            
+            <ion-col size="4">
+              <ion-button (click)="checkout()" expand="block" class="checkout-btn">
+                <i class="fas fa-credit-card"></i>
+                Checkout
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
       </ion-toolbar>
     </ion-footer>
   </ng-template>

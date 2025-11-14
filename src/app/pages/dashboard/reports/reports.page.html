@@ -1,141 +1,252 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>Sales Reports</ion-title>
+  <ion-toolbar class="modern-toolbar">
+    
+    <ion-title class="page-title">
+      <div class="title-content">
+        <h1>Sales Reports</h1>
+        <!-- <p class="page-subtitle">Analytics and performance insights</p> -->
+      </div>
+    </ion-title>
+    
     <ion-buttons slot="end">
-      <ion-button (click)="exportToExcel()" [disabled]="isLoading">
-        <ion-icon slot="icon-only" name="download-outline"></ion-icon>
+      <ion-button (click)="exportToExcel()" [disabled]="isLoading" class="export-btn" fill="outline">
+        <i class="fas fa-file-excel"></i>
+        Excel
       </ion-button>
-      <ion-button (click)="exportToPDF()" [disabled]="isLoading">
-        <ion-icon slot="icon-only" name="document-outline"></ion-icon>
+      <ion-button (click)="exportToPDF()" [disabled]="isLoading" class="export-btn" fill="solid">
+        <i class="fas fa-file-pdf"></i>
+        PDF
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="modern-reports-content">
   <!-- Loading Spinner -->
   <div class="loading-container" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading reports...</p>
+    <div class="loading-spinner">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+    <h3>Generating Reports</h3>
+    <p>Please wait while we compile your sales data...</p>
   </div>
 
+  <div *ngIf="!isLoading" class="reports-content">
     <!-- Sales Overview Cards -->
-    <ion-grid>
-      <ion-row>
-        <ion-col size="6" size-md="3">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>{{ formatCurrency(totalSales) }}</ion-card-title>
-              <ion-card-subtitle>Total Sales</ion-card-subtitle>
-            </ion-card-header>
-          </ion-card>
-        </ion-col>
-        
-        <ion-col size="6" size-md="3">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>{{ formatCurrency(avgTransaction) }}</ion-card-title>
-              <ion-card-subtitle>Avg Transaction</ion-card-subtitle>
-            </ion-card-header>
-          </ion-card>
-        </ion-col>
-        
-        <ion-col size="6" size-md="3">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>{{ transactions }}</ion-card-title>
-              <ion-card-subtitle>Transactions</ion-card-subtitle>
-            </ion-card-header>
-          </ion-card>
-        </ion-col>
-        
-        <ion-col size="6" size-md="3">
-          <ion-card>
-            <ion-card-header>
-              <ion-card-title>{{ itemsSold }}</ion-card-title>
-              <ion-card-subtitle>Items Sold</ion-card-subtitle>
-            </ion-card-header>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+    <section class="overview-section">
+      <!-- <div class="section-header">
+        <h2>Sales Overview</h2>
+        <p>Key performance indicators and metrics</p>
+      </div> -->
+      
+      <div class="stats-grid">
+        <ion-card class="stat-card sales-card">
+          <ion-card-content>
+            <div class="card-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="card-content">
+              <h3>Total Sales</h3>
+              <h1>{{ formatCurrency(totalSales) }}</h1>
+              <p>All-time revenue</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
 
+        <ion-card class="stat-card transaction-card">
+          <ion-card-content>
+            <div class="card-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div class="card-content">
+              <h3>Avg Transaction</h3>
+              <h1>{{ formatCurrency(avgTransaction) }}</h1>
+              <p>Per sale average</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="stat-card count-card">
+          <ion-card-content>
+            <div class="card-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="card-content">
+              <h3>Transactions</h3>
+              <h1>{{ transactions }}</h1>
+              <p>Total orders processed</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card class="stat-card items-card">
+          <ion-card-content>
+            <div class="card-icon">
+              <i class="fas fa-cube"></i>
+            </div>
+            <div class="card-content">
+              <h3>Items Sold</h3>
+              <h1>{{ itemsSold }}</h1>
+              <p>Total products sold</p>
+            </div>
+          </ion-card-content>
+        </ion-card>
+      </div>
+    </section>
 
     <!-- Top Products Section -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Top Selling Products</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-item *ngFor="let product of topProducts; let i = index">
-            <ion-label>
-              <h2>#{{ i + 1 }} {{ product.name }}</h2>
-              <p>{{ product.quantity }} units sold</p>
-            </ion-label>
-            <ion-note slot="end">{{ formatCurrency(product.total) }}</ion-note>
-          </ion-item>
-        </ion-list>
+    <section class="top-products-section">
+      <ion-card class="modern-card">
+        <ion-card-header class="card-header">
+          <div class="header-content">
+            <div class="title-section">
+              <i class="fas fa-trophy"></i>
+              <ion-card-title>Top Selling Products</ion-card-title>
+            </div>
+            <ion-badge color="primary" class="count-badge">
+              {{ topProducts.length }} products
+            </ion-badge>
+          </div>
+        </ion-card-header>
         
-        <!-- Empty State -->
-        <div class="empty-state" *ngIf="topProducts.length === 0">
-          <ion-icon name="stats-chart-outline"></ion-icon>
-          <h3>No sales data</h3>
-          <p>Sales data will appear here after transactions</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
+        <ion-card-content>
+          <div class="products-list">
+            <div class="product-item" *ngFor="let product of topProducts; let i = index">
+              <div class="product-rank" [class.top-rank]="i < 3">
+                #{{ i + 1 }}
+              </div>
+              
+              <div class="product-info">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-meta">
+                  <span class="quantity">
+                    <i class="fas fa-cube"></i>
+                    {{ product.quantity }} units sold
+                  </span>
+                </div>
+              </div>
+              
+              <div class="product-total">
+                {{ formatCurrency(product.total) }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div class="modern-empty-state" *ngIf="topProducts.length === 0">
+            <div class="empty-icon">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <h3>No sales data available</h3>
+            <p>Sales data will appear here after transactions are processed</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </section>
 
     <!-- Inventory Movement Section -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Inventory Movement</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-item *ngFor="let movement of inventoryMovement">
-            <ion-label>
-              <h2>{{ movement.productName }}</h2>
-              <p>Stock: {{ movement.currentStock }}</p>
-            </ion-label>
-            <ion-note slot="end" [color]="movement.change >= 0 ? 'success' : 'danger'">
-              {{ movement.change >= 0 ? '+' : '' }}{{ movement.change }}
-            </ion-note>
-          </ion-item>
-        </ion-list>
+    <section class="inventory-section">
+      <ion-card class="modern-card">
+        <ion-card-header class="card-header">
+          <div class="header-content">
+            <div class="title-section">
+              <i class="fas fa-warehouse"></i>
+              <ion-card-title>Inventory Movement</ion-card-title>
+            </div>
+            <ion-badge color="warning" class="count-badge">
+              {{ inventoryMovement.length }} items
+            </ion-badge>
+          </div>
+        </ion-card-header>
         
-        <!-- Empty State -->
-        <div class="empty-state" *ngIf="inventoryMovement.length === 0">
-          <ion-icon name="cube-outline"></ion-icon>
-          <h3>No inventory data</h3>
-          <p>Inventory movements will appear here</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
+        <ion-card-content>
+          <div class="movement-list">
+            <div class="movement-item" *ngFor="let movement of inventoryMovement">
+              <div class="product-avatar">
+                <i class="fas fa-box"></i>
+              </div>
+              
+              <div class="movement-info">
+                <div class="product-name">{{ movement.productName }}</div>
+                <div class="stock-info">
+                  <span class="current-stock">
+                    <i class="fas fa-layer-group"></i>
+                    Current: {{ movement.currentStock }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="movement-change" [class.positive]="movement.change >= 0" [class.negative]="movement.change < 0">
+                <i class="fas" [class.fa-arrow-up]="movement.change >= 0" [class.fa-arrow-down]="movement.change < 0"></i>
+                {{ movement.change >= 0 ? '+' : '' }}{{ movement.change }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div class="modern-empty-state" *ngIf="inventoryMovement.length === 0">
+            <div class="empty-icon">
+              <i class="fas fa-cubes"></i>
+            </div>
+            <h3>No inventory movements</h3>
+            <p>Inventory changes will appear here as products are sold or restocked</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </section>
 
     <!-- Recent Orders Section -->
-    <ion-card>
-      <ion-card-header>
-        <ion-card-title>Recent Orders</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list>
-          <ion-item *ngFor="let order of orders.slice(0, 5)">
-            <ion-label>
-              <h2>Order #{{ order.id?.substring(0, 8) }}</h2>
-              <p>{{ order.createdAt | date:'medium' }}</p>
-              <p>{{ order.items.length }} items</p>
-            </ion-label>
-            <ion-note slot="end">{{ formatCurrency(order.total) }}</ion-note>
-          </ion-item>
-        </ion-list>
+    <section class="orders-section">
+      <ion-card class="modern-card">
+        <ion-card-header class="card-header">
+          <div class="header-content">
+            <div class="title-section">
+              <i class="fas fa-clock"></i>
+              <ion-card-title>Recent Orders</ion-card-title>
+            </div>
+            <ion-badge color="success" class="count-badge">
+              {{ orders.length }} total
+            </ion-badge>
+          </div>
+        </ion-card-header>
         
-        <!-- Empty State -->
-        <div class="empty-state" *ngIf="orders.length === 0">
-          <ion-icon name="receipt-outline"></ion-icon>
-          <h3>No orders yet</h3>
-          <p>Orders will appear here after checkout</p>
-        </div>
-      </ion-card-content>
-    </ion-card>
+        <ion-card-content>
+          <div class="orders-list">
+            <div class="order-item" *ngFor="let order of orders.slice(0, 5)">
+              <div class="order-avatar">
+                <i class="fas fa-receipt"></i>
+              </div>
+              
+              <div class="order-info">
+                <div class="order-id">Order #{{ order.id?.substring(0, 8) }}</div>
+                <div class="order-meta">
+                  <span class="order-date">
+                    <i class="fas fa-calendar"></i>
+                    {{ order.createdAt | date:'medium' }}
+                  </span>
+                  <span class="order-items">
+                    <i class="fas fa-cube"></i>
+                    {{ order.items.length }} items
+                  </span>
+                </div>
+              </div>
+              
+              <div class="order-total">
+                {{ formatCurrency(order.total) }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Empty State -->
+          <div class="modern-empty-state" *ngIf="orders.length === 0">
+            <div class="empty-icon">
+              <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3>No orders yet</h3>
+            <p>Customer orders will appear here after successful checkouts</p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </section>
+  </div>
 </ion-content>

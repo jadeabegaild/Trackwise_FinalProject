@@ -16,7 +16,6 @@
     </div>
 
     <form [formGroup]="registerForm" (ngSubmit)="register()" class="form-container">
-      <!-- Business Name -->
       <ion-item class="form-item" [class.invalid]="businessName?.invalid && businessName?.touched">
         <ion-label position="stacked" class="input-label">
           Business Name <span class="required">*</span>
@@ -38,7 +37,6 @@
         </ion-text>
       </div>
 
-      <!-- Email -->
       <ion-item class="form-item" [class.invalid]="email?.invalid && email?.touched">
         <ion-label position="stacked" class="input-label">
           Email Address <span class="required">*</span>
@@ -60,7 +58,7 @@
         </ion-text>
       </div>
 
-      <!-- Phone -->
+  
       <ion-item class="form-item" [class.invalid]="phone?.invalid && phone?.touched">
         <ion-label position="stacked" class="input-label">
           Phone Number <span class="required">*</span>
@@ -82,7 +80,7 @@
         </ion-text>
       </div>
 
-      <!-- Password -->
+
       <ion-item class="form-item" [class.invalid]="password?.invalid && password?.touched">
         <ion-label position="stacked" class="input-label">
           Password <span class="required">*</span>
@@ -111,7 +109,7 @@
         </ion-text>
       </div>
 
-      <!-- Confirm Password -->
+
       <ion-item class="form-item" [class.invalid]="confirmPassword?.invalid && confirmPassword?.touched">
         <ion-label position="stacked" class="input-label">
           Confirm Password <span class="required">*</span>
@@ -140,7 +138,6 @@
         </ion-text>
       </div>
 
-      <!-- Submit Button -->
       <ion-button 
         type="submit" 
         expand="block" 
@@ -151,7 +148,6 @@
         Create Account
       </ion-button>
 
-      <!-- Login Link -->
       <div class="login-link">
         <p>Already have an account?</p>
         <ion-button 

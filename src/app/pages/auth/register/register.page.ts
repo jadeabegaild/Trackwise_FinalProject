@@ -55,7 +55,6 @@ export class RegisterPage implements OnInit {
       try {
         const { email, password, businessName, phone } = this.registerForm.value;
         
-        // Register user with email verification
         await this.authService.register(email, password, {
           businessName,
           phone
@@ -63,7 +62,6 @@ export class RegisterPage implements OnInit {
         
         await loading.dismiss();
         
-        // Show success message with verification info
         const alert = await this.alertController.create({
           header: 'Registration Successful!',
           message: `We've sent a verification email to ${email}. Please check your inbox and verify your email address before logging in.`,
@@ -89,7 +87,6 @@ export class RegisterPage implements OnInit {
         
         let errorMessage = 'Registration failed. Please try again.';
         
-        // Handle specific Firebase error codes
         switch (error.code) {
           case 'auth/email-already-in-use':
             errorMessage = 'This email address is already registered. Please use a different email or try logging in.';
@@ -118,7 +115,6 @@ export class RegisterPage implements OnInit {
         await alert.present();
       }
     } else {
-      // Mark all fields as touched to show validation errors
       Object.keys(this.registerForm.controls).forEach(key => {
         this.registerForm.get(key)?.markAsTouched();
       });

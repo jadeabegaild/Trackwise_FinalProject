@@ -1,467 +1,736 @@
-/* ===== Card Enhancements - Theme Aligned ===== */
-ion-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 16px;
-  border: 1px solid rgba(106, 75, 199, 0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
+/* inventory.page.scss */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+:host {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --warning-gradient: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --card-hover-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
+}
+
+/* Modern Header */
+.modern-toolbar {
+  --background: white;
+  --border-color: transparent;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
   
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(106, 75, 199, 0.15);
-    border-color: rgba(106, 75, 199, 0.2);
+  .page-title {
+    padding: 0;
+    
+    .title-content {
+      h1 {
+        margin: 0;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+        text-transform: none;
+      }
+      
+      .page-subtitle {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 400;
+        text-transform: none;
+      }
+    }
+  }
+  
+  .menu-button {
+    --padding-start: 8px;
+    --padding-end: 8px;
+    
+    i {
+      font-size: 1.2rem;
+      color: #64748b;
+    }
+  }
+  
+  .add-product-btn {
+    --border-radius: 12px;
+    --background: #667eea;
+    font-weight: 600;
+    
+    i {
+      margin-right: 8px;
+      font-size: 0.9rem;
+    }
   }
 }
 
-// Quick action cards - Theme Aligned
-ion-card[color] {
-  position: relative;
-  background: linear-gradient(135deg, var(--ion-color-base), var(--ion-color-shade));
-  color: white;
+.modern-inventory-content {
+  --background: #f8fafc;
+  padding: 16px;
+}
+
+/* Search and Filter Section */
+.search-filter-section {
+  margin-bottom: 24px;
   
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    transition: left 0.6s ease;
-  }
-  
-  &:hover::before {
-    left: 100%;
-  }
-  
-  ion-card-content {
-    padding: 24px;
-    position: relative;
-    z-index: 1;
+  .search-container {
+    margin-bottom: 16px;
     
-    ion-icon {
-      margin-bottom: 12px;
-      font-size: 2rem;
-      opacity: 0.9;
+    .search-box {
+      position: relative;
+      
+      // .search-icon {
+      //   position: absolute;
+      //   left: 16px;
+      //   top: 50%;
+      //   transform: translateY(-50%);
+      //   z-index: 2;
+      //   color: #64748b;
+      //   font-size: 1rem;
+      // }
+      
+      // .modern-searchbar {
+      //   --background: white;
+      //   --border-radius: 12px;
+      //   --box-shadow: var(--card-shadow);
+      //   padding-left: 40px;
+      // }
+    }
+  }
+  
+  .categories-container {
+    .modern-segment {
+      --background: white;
+      border-radius: 16px;
+      padding: 4px;
+      box-shadow: var(--card-shadow);
+      
+      .category-btn {
+        --background: transparent;
+        --background-checked: #667eea;
+        --color: #64748b;
+        --color-checked: white;
+        --border-radius: 12px;
+        --padding-top: 12px;
+        --padding-bottom: 12px;
+        min-height: 60px;
+        
+        .category-content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          
+          i {
+            font-size: 1.2rem;
+            margin-bottom: 4px;
+          }
+          
+          ion-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin: 0;
+            text-transform: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Summary Section */
+.summary-section {
+  margin-bottom: 24px;
+  
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    
+    .summary-card {
+      margin: 0;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
       transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--card-hover-shadow);
+      }
+      
+      ion-card-content {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        
+        .card-icon {
+          width: 60px;
+          height: 60px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          color: white;
+        }
+        
+        .card-content {
+          flex: 1;
+          
+          h3 {
+            margin: 0 0 4px 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: none;
+          }
+          
+          h1 {
+            margin: 0 0 4px 0;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+          }
+          
+          p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: none;
+          }
+        }
+      }
+      
+      &.total-card {
+        .card-icon {
+          background: var(--primary-gradient);
+        }
+      }
+      
+      &.stock-card {
+        .card-icon {
+          background: var(--success-gradient);
+        }
+      }
+      
+      &.low-stock-card {
+        .card-icon {
+          background: var(--warning-gradient);
+        }
+      }
     }
+  }
+}
+
+/* Swipe Hint */
+.swipe-hint {
+  text-align: center;
+  padding: 12px 16px;
+  background: white;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: var(--card-shadow);
+  animation: swipeHint 2s ease-in-out infinite;
+  
+  i {
+    color: #667eea;
+    margin-right: 8px;
+    font-size: 0.9rem;
+  }
+  
+  span {
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: none;
+  }
+}
+
+@keyframes swipeHint {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(-8px); }
+}
+
+/* Products Section */
+.products-section {
+  .section-header {
+    margin-bottom: 20px;
     
-    h3 {
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: inherit;
-      font-size: 1.1rem;
-      opacity: 0.95;
-    }
-    
-    h1 {
-      font-size: 2.5rem;
+    h2 {
+      margin: 0 0 4px 0;
+      font-size: 1.3rem;
       font-weight: 700;
-      margin: 12px 0;
-      background: linear-gradient(135deg, #ffffff, rgba(255,255,255,0.8));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: #1e293b;
+      text-transform: none;
     }
     
     p {
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 0.9rem;
       margin: 0;
-      line-height: 1.4;
-      opacity: 0.9;
-    }
-  }
-  
-  &:hover {
-    ion-icon {
-      transform: scale(1.1);
-      opacity: 1;
+      color: #64748b;
+      font-size: 0.9rem;
+      text-transform: none;
     }
   }
 }
 
-/* ===== Enhanced Product List Styles - Theme Aligned ===== */
-ion-list {
+.modern-product-list {
   background: transparent;
-  padding: 8px 0;
+  padding: 0;
   
-  // Important: Remove overflow hidden from ion-list, let ion-item-sliding manage it.
-  // ion-list should be a simple container.
-  
-  ion-item-sliding {
-    // Ensure the sliding container is a block and has a defined stacking context
-    display: block;
-    position: relative;
-    z-index: 1; /* Give it a base z-index */
-    
-    border-radius: 12px;
-    margin-bottom: 8px;
-    overflow: visible; /* Crucial: Allow ion-item-options to break out if needed */
+  .product-slide {
+    border-radius: 16px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
     transition: all 0.3s ease;
     
     &.sliding-active {
       transform: scale(0.98);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      z-index: 10; /* Boost z-index when active to ensure it's on top */
+      box-shadow: var(--card-hover-shadow);
     }
   }
   
-  ion-item {
+  .product-item {
     --padding-start: 16px;
-    --inner-padding-end: 16px;
-    --border-radius: 12px;
-    --background: #f8f7ff;
-    --background-hover: #ece8ff;
-    --background-activated: #e1defc;
-    // Remove margin-bottom from ion-item since ion-item-sliding is managing it now
-    // margin-bottom: 8px; 
-    border: 1px solid #dedbf9;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden; /* Keep overflow hidden on ion-item for the before pseudo-element */
-    z-index: 2; /* Ensure the item is on top of the options when not sliding */
+    --padding-end: 16px;
+    --inner-padding-end: 0;
+    --background: white;
+    --min-height: 80px;
+    --border-radius: 16px;
     
-    &::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 4px;
-      background: linear-gradient(135deg, #6a4bc7, #a68af9);
-      transform: scaleY(0);
-      transition: transform 0.3s ease;
-      z-index: 3;
-    }
-    
-    &:hover {
-      --background: #ece8ff;
-      border-color: #a68af9;
-      transform: translateX(4px);
-      box-shadow: 0 2px 8px rgba(106, 75, 199, 0.1);
+    .product-avatar {
+      --size: 60px;
+      position: relative;
+      margin-right: 16px;
       
-      &::before {
-        transform: scaleY(1);
+      ion-img {
+        border-radius: 12px;
       }
-    }
-    
-    ion-label {
-      h2 {
+      
+      .stock-badge {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: #10b981;
+        color: white;
+        border-radius: 8px;
+        padding: 2px 6px;
+        font-size: 0.7rem;
         font-weight: 600;
-        color: #333;
-        margin-bottom: 6px;
-        font-size: 0.95rem;
-        transition: color 0.3s ease;
-      }
-      
-      p {
-        color: #666;
-        font-size: 0.85rem;
-        margin: 4px 0;
-        line-height: 1.4;
+        min-width: 24px;
+        text-align: center;
         
-        ion-text[color="primary"] {
-          font-weight: 600;
-          font-size: 0.9rem;
-          color: #6a4bc7;
+        &.low-stock {
+          background: #ef4444;
+          animation: pulse 2s infinite;
+        }
+        
+        &.warning-stock {
+          background: #f59e0b;
         }
       }
     }
     
-    ion-badge {
-      font-size: 0.7rem;
-      border-radius: 8px;
-      padding: 4px 8px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      background: #6a4bc7;
-      color: white;
-      
-      &.stock-low {
-        background: #ff6b6b;
-        animation: pulse 2s infinite;
+    .product-details {
+      .product-name {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 6px;
+        font-size: 0.95rem;
+        text-transform: none;
       }
       
-      &.stock-available {
-        background: #51cf66;
+      .product-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin-bottom: 8px;
+        
+        .product-category, .product-barcode {
+          font-size: 0.8rem;
+          color: #64748b;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          text-transform: none;
+          
+          i {
+            font-size: 0.7rem;
+            width: 12px;
+          }
+        }
       }
       
-      &.stock-warning {
-        background: #ff922b;
+      .product-price {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        
+        .price {
+          font-size: 1rem;
+          font-weight: 700;
+          color: #10b981;
+        }
+        
+        .stock-status {
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 4px 8px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          
+          &.in-stock {
+            background: #d1fae5;
+            color: #065f46;
+          }
+          
+          &.low-stock {
+            background: #fef2f2;
+            color: #dc2626;
+          }
+          
+          &.warning-stock {
+            background: #fffbeb;
+            color: #d97706;
+          }
+          
+          i {
+            font-size: 0.6rem;
+          }
+        }
       }
     }
     
-    &:hover ion-badge {
-      transform: scale(1.05);
+    .quick-actions {
+      .action-btn {
+        --padding-start: 8px;
+        --padding-end: 8px;
+        --color: #64748b;
+        
+        i {
+          font-size: 1rem;
+        }
+      }
     }
   }
   
-  // Alternate item background for better readability
-  ion-item:nth-child(even) {
-    --background: #faf9ff;
-  }
-}
-
-/* Fix ion-item-options positioning */
-ion-item-options {
-  z-index: 100; /* Ensure options are above everything else in the item sliding */
-}
-
-/* Also update the Swipe to Delete Animations section */
-ion-item-sliding {
-  border-radius: 12px;
-  margin-bottom: 8px;
-  overflow: visible; /* Ensure this is 'visible' here as well */
-  transition: all 0.3s ease;
-  z-index: 1; /* Keep this base z-index */
-  
-  &.sliding-active {
-    transform: scale(0.98);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    z-index: 10; /* Boost z-index when active */
-  }
-}
-
-/* ===== Enhanced Search and Filter Section - Theme Aligned ===== */
-ion-segment {
-  background: #f8f7ff;
-  border-radius: 12px;
-  padding: 4px;
-  margin: 16px 0;
-  border: 1px solid #e1defc;
-  
-  ion-segment-button {
-    --padding-start: 12px;
-    --padding-end: 12px;
-    --background: transparent;
-    --background-checked: #6a4bc7;
-    --color: #666;
-    --color-checked: white;
-    --border-radius: 8px;
-    --indicator-color: transparent;
-    min-height: 40px;
-    transition: all 0.3s ease;
-    
-    ion-label {
+  .slide-options {
+    .edit-option, .delete-option {
+      min-width: 80px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-    
-    ion-badge {
-      font-size: 0.6rem;
-      margin-left: 4px;
-      background: rgba(106, 75, 199, 0.1);
-      color: currentColor;
-      transition: all 0.3s ease;
-    }
-    
-    &:hover {
-      --background: rgba(106, 75, 199, 0.1);
-      transform: translateY(-1px);
-    }
-    
-    &.segment-button-checked {
-      box-shadow: 0 2px 8px rgba(106, 75, 199, 0.3);
+      justify-content: center;
       
-      ion-badge {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
+      .option-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        
+        i {
+          font-size: 1.2rem;
+        }
+        
+        span {
+          font-size: 0.7rem;
+          font-weight: 500;
+          text-transform: none;
+        }
       }
     }
+    
+    .edit-option {
+      --background: #667eea;
+    }
+    
+    .delete-option {
+      --background: #ef4444;
+    }
   }
 }
 
-/* ===== Enhanced Empty State Styling - Theme Aligned ===== */
-.ion-text-center {
-  padding: 40px 20px;
+/* Empty State */
+.modern-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
   
-  p {
-    color: #888;
-    font-size: 1.1rem;
-    margin: 16px 0;
-    line-height: 1.6;
-  }
-  
-  ion-icon {
-    margin-bottom: 16px;
-    font-size: 4rem;
-    color: #d3c7f5;
-    opacity: 0.7;
-    transition: all 0.3s ease;
-  }
-  
-  &:hover ion-icon {
-    transform: scale(1.1);
-    opacity: 1;
-    color: #a68af9;
-  }
-  
-  // Add some decorative elements
-  position: relative;
-  
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
-    background: radial-gradient(circle, #f8f7ff 0%, transparent 70%);
-    z-index: -1;
-  }
-}
-
-/* ===== Delete Button Styles ===== */
-ion-item-options {
-  ion-item-option {
-    min-width: 80px;
+  .empty-icon {
+    width: 80px;
+    height: 80px;
+    background: #f1f5f9;
+    border-radius: 50%;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin: 0 auto 20px auto;
     
-    ion-icon {
-      font-size: 1.2rem;
-      margin-bottom: 4px;
-    }
-    
-    // Edit button
-    &[color="primary"] {
-      --background: linear-gradient(135deg, #6a4bc7, #a68af9);
-      --background-activated: #5a3bb7;
-      --background-hover: #7b5fd9;
-    }
-    
-    // Delete button
-    &[color="danger"] {
-      --background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-      --background-activated: #e74c3c;
-      --background-hover: #ff7979;
+    i {
+      font-size: 2rem;
+      color: #94a3b8;
     }
   }
-}
-
-/* ===== Swipe to Delete Animations ===== */
-ion-item-sliding {
-  border-radius: 12px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  transition: all 0.3s ease;
   
-  &.sliding-active {
-    transform: scale(0.98);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  h3 {
+    margin: 0 0 8px 0;
+    font-weight: 600;
+    color: #1e293b;
+    text-transform: none;
   }
-}
-
-/* ===== Enhanced Delete Confirmation Styles ===== */
-.danger-button {
-  --color: #e74c3c;
-  --background: rgba(231, 76, 60, 0.1);
-  --background-activated: rgba(231, 76, 60, 0.2);
   
-  &:hover {
-    --background: rgba(231, 76, 60, 0.15);
+  p {
+    margin: 0 0 20px 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    text-transform: none;
   }
-}
-
-/* ===== Loading Animation for Delete ===== */
-.delete-loading {
-  --spinner-color: #e74c3c;
   
-  .loading-wrapper {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-    color: white;
+  .add-first-btn {
+    --border-radius: 12px;
+    --background: #667eea;
+    font-weight: 600;
     
-    .loading-content {
-      color: white;
+    i {
+      margin-right: 8px;
     }
   }
 }
 
-/* ===== Success/Error Message Styles ===== */
-.alert-success {
-  .alert-wrapper {
-    background: linear-gradient(135deg, #51cf66, #40c057);
-    color: white;
-    
-    .alert-title, .alert-message {
-      color: white;
-    }
-    
-    .alert-button {
-      color: white;
-      border-color: rgba(255, 255, 255, 0.3);
+/* Modern Product Modal */
+.modern-product-modal {
+  --width: 500px;
+  --max-width: 90vw;
+  --height: 85vh;
+  --border-radius: 20px;
+  
+  .modal-header {
+    .close-btn, .cancel-btn {
+      --color: #64748b;
       
-      &:hover {
-        background: rgba(255, 255, 255, 0.1);
+      i {
+        font-size: 1.2rem;
+      }
+    }
+    
+    .modal-title {
+      h2 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1e293b;
+        text-transform: none;
+      }
+      
+      p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #64748b;
+        text-transform: none;
+      }
+    }
+  }
+  
+  .modal-content {
+    --padding-top: 16px;
+    --padding-bottom: 16px;
+    
+    .product-form {
+      .image-upload-section {
+        margin-bottom: 24px;
+        
+        .image-preview-container {
+          text-align: center;
+          
+          .image-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 16px;
+            margin: 0 auto 16px auto;
+            position: relative;
+            overflow: hidden;
+            border: 2px dashed #e2e8f0;
+            background: #f8fafc;
+            transition: all 0.3s ease;
+            
+            &.has-image {
+              border-color: #667eea;
+            }
+            
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+            
+            .image-overlay {
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(102, 126, 234, 0.9);
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              opacity: 0;
+              transition: opacity 0.3s ease;
+              color: white;
+              
+              i {
+                font-size: 1.5rem;
+                margin-bottom: 4px;
+              }
+              
+              span {
+                font-size: 0.8rem;
+                font-weight: 500;
+                text-transform: none;
+              }
+            }
+            
+            &:hover .image-overlay {
+              opacity: 1;
+            }
+          }
+          
+          .file-input {
+            display: none;
+          }
+          
+          .upload-btn {
+            --color: #667eea;
+            font-size: 0.9rem;
+            
+            i {
+              margin-right: 6px;
+            }
+          }
+        }
+      }
+      
+      .form-fields {
+        .form-list {
+          background: transparent;
+          
+          .form-item {
+            --padding-start: 0;
+            --padding-end: 0;
+            --inner-padding-end: 0;
+            --background: transparent;
+            margin-bottom: 20px;
+            
+            .form-label {
+              font-weight: 600;
+              color: #374151;
+              margin-bottom: 8px;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              text-transform: none;
+              
+              i {
+                font-size: 0.9rem;
+                color: #667eea;
+                width: 16px;
+              }
+            }
+            
+            .form-input, .form-select {
+              --padding-start: 12px;
+              --padding-end: 12px;
+              --padding-top: 12px;
+              --padding-bottom: 12px;
+              background: #f8fafc;
+              border-radius: 12px;
+              border: 1px solid #e2e8f0;
+              font-size: 0.9rem;
+            }
+            
+            .error-message {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-size: 0.8rem;
+              color: #ef4444;
+              margin-top: 4px;
+              text-transform: none;
+              
+              i {
+                font-size: 0.7rem;
+              }
+            }
+            
+            .scan-btn {
+              --color: #667eea;
+              margin-right: 8px;
+              
+              i {
+                margin-right: 4px;
+                font-size: 0.8rem;
+              }
+            }
+          }
+          
+          .form-row {
+            display: flex;
+            gap: 12px;
+            
+            .half-width {
+              flex: 1;
+            }
+          }
+        }
+      }
+      
+      .info-message {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-top: -12px;
+        margin-bottom: 16px;
+        text-transform: none;
+        
+        i {
+          font-size: 0.7rem;
+        }
+      }
+    }
+  }
+  
+  .modal-footer {
+    .footer-grid {
+      padding: 8px 16px;
+      
+      .cancel-action-btn {
+        --border-color: #cbd5e1;
+        --color: #64748b;
+        
+        i {
+          margin-right: 6px;
+        }
+      }
+      
+      .save-action-btn {
+        --background: #667eea;
+        font-weight: 600;
+        
+        i {
+          margin-right: 6px;
+        }
       }
     }
   }
 }
 
-.alert-error {
-  .alert-wrapper {
-    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-    color: white;
-    
-    .alert-title, .alert-message {
-      color: white;
-    }
-    
-    .alert-button {
-      color: white;
-      border-color: rgba(255, 255, 255, 0.3);
-      
-      &:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-    }
-  }
-}
-
-/* ===== Swipe Hint Animation ===== */
-@keyframes swipeHint {
-  0% { transform: translateX(0); }
-  50% { transform: translateX(-10px); }
-  100% { transform: translateX(0); }
-}
-
-.swipe-hint {
-  animation: swipeHint 2s ease-in-out infinite;
-  text-align: center;
-  padding: 16px;
-  
-  ion-icon {
-    color: #6a4bc7;
-    margin-right: 8px;
-  }
-  
-  span {
-    color: #666;
-    font-size: 0.8rem;
-  }
-}
-
-/* ===== Enhanced Animations - Theme Aligned ===== */
+/* Animations */
 @keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-  100% {
-    opacity: 1;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 @keyframes slideIn {
@@ -475,215 +744,104 @@ ion-item-sliding {
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: calc(200px + 100%) 0;
-  }
-}
-
-// Animation for list items
-ion-item {
-  animation: slideIn 0.5s ease forwards;
+/* Apply animations */
+.product-slide {
+  animation: slideIn 0.4s ease forwards;
   opacity: 0;
   
-  // Stagger animation for list items
   @for $i from 1 through 20 {
     &:nth-child(#{$i}) {
       animation-delay: #{$i * 0.1}s;
     }
   }
-  
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  
-  &:hover {
-    transform: translateX(4px) scale(1.02);
-  }
-  
-  &:active {
-    transform: scale(0.98);
-    transition: transform 0.1s ease;
-  }
 }
 
-// Enhanced card animations
-ion-card {
+.summary-card {
   animation: slideIn 0.6s ease forwards;
   opacity: 0;
   
-  @for $i from 1 through 10 {
+  @for $i from 1 through 3 {
     &:nth-child(#{$i}) {
-      animation-delay: #{$i * 0.15}s;
+      animation-delay: #{$i * 0.2}s;
     }
   }
 }
 
-/* ===== Enhanced Responsive Design ===== */
+/* Responsive Design */
 @media (max-width: 768px) {
-  ion-segment {
-    ion-segment-button {
-      --padding-start: 8px;
-      --padding-end: 8px;
-      min-height: 36px;
-      
-      ion-label {
-        font-size: 0.7rem;
-        gap: 4px;
-      }
-      
-      ion-badge {
-        font-size: 0.55rem;
-      }
-    }
+  .modern-inventory-content {
+    padding: 12px;
   }
   
-  ion-card[color] {
-    ion-card-content {
-      padding: 20px;
-      
-      h1 {
-        font-size: 2rem;
-      }
-      
-      h3 {
-        font-size: 1rem;
-      }
-    }
+  .summary-section .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
   
-  ion-list {
-    ion-item {
-      --padding-start: 12px;
-      --inner-padding-end: 12px;
-      margin-bottom: 6px;
-      
-      ion-label {
-        h2 {
-          font-size: 0.9rem;
-        }
-        
-        p {
-          font-size: 0.8rem;
-        }
-      }
-    }
-  }
-  
-  .ion-text-center {
-    padding: 30px 16px;
+  .modern-product-list .product-item {
+    --padding-start: 12px;
+    --padding-end: 12px;
+    --min-height: 70px;
     
-    p {
-      font-size: 1rem;
+    .product-avatar {
+      --size: 50px;
+      margin-right: 12px;
     }
-    
-    ion-icon {
-      font-size: 3rem;
-    }
+  }
+  
+  .modern-product-modal {
+    --height: 90vh;
   }
 }
 
 @media (max-width: 480px) {
-  ion-card[color] {
-    ion-card-content {
-      padding: 16px;
+  .modern-inventory-content {
+    padding: 8px;
+  }
+  
+  .search-filter-section .categories-container .modern-segment {
+    .category-btn {
+      min-height: 50px;
       
-      h1 {
-        font-size: 1.8rem;
-      }
-      
-      ion-icon {
-        font-size: 1.8rem;
+      .category-content {
+        i {
+          font-size: 1rem;
+        }
+        
+        ion-label {
+          font-size: 0.7rem;
+        }
       }
     }
   }
   
-  ion-segment {
-    flex-wrap: wrap;
-    gap: 4px;
+  .form-fields .form-list .form-row {
+    flex-direction: column;
+    gap: 0;
     
-    ion-segment-button {
-      flex: 1;
-      min-width: calc(50% - 8px);
+    .half-width {
+      width: 100%;
     }
   }
-
-  /* ===== Responsive Delete Button ===== */
-  ion-item-options {
-    ion-item-option {
-      min-width: 70px;
-      font-size: 0.65rem;
-      
-      ion-icon {
-        font-size: 1rem;
-        margin-bottom: 2px;
-      }
-    }
-  }
-}
-
-/* ===== Additional Utility Classes - Theme Aligned ===== */
-.glass-effect {
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(106, 75, 199, 0.1);
-}
-
-.shadow-lift {
-  box-shadow: 0 4px 20px rgba(106, 75, 199, 0.1);
-  transition: box-shadow 0.3s ease;
   
-  &:hover {
-    box-shadow: 0 8px 30px rgba(106, 75, 199, 0.15);
+  .modal-footer .footer-grid {
+    padding: 8px 12px;
   }
 }
 
-// Loading skeleton animation
-.skeleton-item {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e4ff 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-// Theme consistent focus states
-ion-item:focus-within,
-ion-card:focus-within {
-  outline: 2px solid #6a4bc7;
-  outline-offset: 2px;
-}
-
-// Enhanced button styles to match theme
+/* Global text transformation fixes */
 ion-button {
-  --border-radius: 12px;
-  --box-shadow: 0 2px 8px rgba(106, 75, 199, 0.2);
-  transition: all 0.3s ease;
-  
-  &:hover {
-    --box-shadow: 0 4px 12px rgba(106, 75, 199, 0.3);
-    transform: translateY(-1px);
-  }
-  
-  &:active {
-    transform: translateY(0);
-  }
+  text-transform: none !important;
 }
 
-// Custom scrollbar to match theme
-::-webkit-scrollbar {
-  width: 6px;
+ion-card-title, ion-card-subtitle {
+  text-transform: none !important;
 }
 
-::-webkit-scrollbar-track {
-  background: #f8f7ff;
-  border-radius: 3px;
+ion-label {
+  text-transform: none !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #6a4bc7, #a68af9);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #5a3bb7, #967ae9);
+ion-segment-button {
+  text-transform: none !important;
 }

@@ -1,189 +1,463 @@
 <ion-header>
-  <ion-toolbar>
-    <ion-title>Dashboard</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="refreshData()" [disabled]="isLoading">
-        <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+  <ion-toolbar class="modern-toolbar">
+    
+    <ion-title class="page-title">
+      <div class="title-content">
+        <h1>Dashboard</h1>
+        <!-- <p class="page-subtitle">Welcome back! Here's your business overview</p> -->
+      </div>
+    </ion-title>
+
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-  <!-- Loading Spinner -->
+<div class="sidebar-overlay" [class.active]="isSidebarOpen" (click)="toggleSidebar()"></div>
+
+<ion-menu side="start" menuId="main-menu" [swipeGesture]="false" [contentId]="contentId" 
+           class="modern-sidebar" [class.sidebar-open]="isSidebarOpen">
+  <ion-header>
+    <ion-toolbar class="sidebar-toolbar">
+      <ion-title>Navigation</ion-title>
+      <ion-buttons slot="end">
+        <ion-button (click)="toggleSidebar()" class="close-sidebar">
+          <ion-icon name="close-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-content class="sidebar-content">
+    <div class="user-profile-section">
+      <div class="user-info">
+        <ion-avatar class="profile-avatar">
+          <img [src]="user?.avatar || 'assets/images/user-avatar.png'" alt="Profile" />
+        </ion-avatar>
+        <div class="user-details">
+          <h3>{{ user?.name || 'User Name' }}</h3>
+          <p>{{ user?.email || 'user@example.com' }}</p>
+          <ion-badge class="role-badge" [color]="user?.role === 'admin' ? 'primary' : 'medium'">
+            {{ user?.role || 'User' }}
+          </ion-badge>
+        </div>
+      </div>
+      
+      <ion-button expand="block" fill="solid" class="view-profile-btn" (click)="openProfile()">
+        <i class="fas fa-user-edit"></i>
+        View Profile
+      </ion-button>
+    </div>
+
+
+    <ion-list lines="none" class="sidebar-menu">
+      <ion-item button class="menu-item" [class.active]="currentPage === 'dashboard'" (click)="navigateTo('dashboard')">
+        <i class="fas fa-chart-pie menu-icon"></i>
+        <ion-label>Dashboard</ion-label>
+      </ion-item>
+
+      <ion-item button class="menu-item" [class.active]="currentPage === 'products'" (click)="navigateTo('products')">
+        <i class="fas fa-cube menu-icon"></i>
+        <ion-label>Products</ion-label>
+        <ion-badge color="primary" slot="end">{{ inventoryData.totalProducts }}</ion-badge>
+      </ion-item>
+
+      <ion-item button class="menu-item" [class.active]="currentPage === 'orders'" (click)="navigateTo('orders')">
+        <i class="fas fa-shopping-cart menu-icon"></i>
+        <ion-label>Orders</ion-label>
+        <ion-badge color="primary" slot="end">{{ salesData.totalOrders }}</ion-badge>
+      </ion-item>
+
+      <ion-item button class="menu-item" [class.active]="currentPage === 'customers'" (click)="navigateTo('customers')">
+        <i class="fas fa-users menu-icon"></i>
+        <ion-label>Customers</ion-label>
+      </ion-item>
+
+      <ion-item button class="menu-item" [class.active]="currentPage === 'inventory'" (click)="navigateTo('inventory')">
+        <i class="fas fa-warehouse menu-icon"></i>
+        <ion-label>Inventory</ion-label>
+        <ion-badge *ngIf="inventoryData.lowStockCount > 0" color="warning" slot="end">
+          {{ inventoryData.lowStockCount }}
+        </ion-badge>
+      </ion-item>
+
+      <ion-item button class="menu-item" [class.active]="currentPage === 'reports'" (click)="navigateTo('reports')">
+        <i class="fas fa-chart-bar menu-icon"></i>
+        <ion-label>Reports</ion-label>
+      </ion-item>
+    </ion-list>
+
+    <div class="profile-management-section">
+      <h4 class="section-title">Profile Management</h4>
+      
+      <ion-list lines="none" class="profile-menu">
+        <ion-item button class="profile-item" (click)="editProfile()">
+          <i class="fas fa-user-cog menu-icon"></i>
+          <ion-label>Edit Profile</ion-label>
+        </ion-item>
+
+        <ion-item button class="profile-item" (click)="changePassword()">
+          <i class="fas fa-lock menu-icon"></i>
+          <ion-label>Change Password</ion-label>
+        </ion-item>
+
+        <ion-item button class="profile-item" (click)="notificationSettings()">
+          <i class="fas fa-bell menu-icon"></i>
+          <ion-label>Notifications</ion-label>
+          <ion-toggle [checked]="user?.notificationsEnabled"></ion-toggle>
+        </ion-item>
+
+        <ion-item button class="profile-item" (click)="privacySettings()">
+          <i class="fas fa-shield-alt menu-icon"></i>
+          <ion-label>Privacy & Security</ion-label>
+        </ion-item>
+
+        <ion-item button class="profile-item" (click)="preferences()">
+          <i class="fas fa-sliders-h menu-icon"></i>
+          <ion-label>Preferences</ion-label>
+        </ion-item>
+      </ion-list>
+    </div>
+
+    <div class="sidebar-footer">
+      <ion-list lines="none">
+        <ion-item button class="footer-item" (click)="helpSupport()">
+          <i class="fas fa-question-circle menu-icon"></i>
+          <ion-label>Help & Support</ion-label>
+        </ion-item>
+
+        <ion-item button class="footer-item" (click)="logout()">
+          <i class="fas fa-sign-out-alt menu-icon"></i>
+          <ion-label>Logout</ion-label>
+        </ion-item>
+      </ion-list>
+      
+      <div class="app-version">
+        <p>v1.0.0</p>
+      </div>
+    </div>
+  </ion-content>
+</ion-menu>
+
+<ion-content [id]="contentId" class="modern-content">
+
   <div class="loading-container" *ngIf="isLoading">
-    <ion-spinner name="crescent"></ion-spinner>
-    <p>Loading dashboard...</p>
+    <div class="loading-spinner">
+      <ion-spinner name="crescent"></ion-spinner>
+    </div>
+    <h3>Loading Dashboard</h3>
+    <p>Getting the latest business insights...</p>
   </div>
 
-  <div *ngIf="!isLoading">
-    <!-- Stats Overview Cards -->
-    <ion-grid class="stats-grid">
-      <ion-row>
-        <!-- Total Sales -->
-        <ion-col size="12" size-md="6" size-lg="3">
-          <ion-card class="stat-card sales-card">
-            <ion-card-header>
-              <div class="card-icon">
-                <ion-icon name="cash-outline"></ion-icon>
-              </div>
-              <ion-card-title>{{ formatCurrency(salesData.totalSales) }}</ion-card-title>
-              <ion-card-subtitle>Total Sales</ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="trend" [class.positive]="salesData.trend >= 0" [class.negative]="salesData.trend < 0">
-                <ion-icon [name]="salesData.trend >= 0 ? 'trending-up' : 'trending-down'"></ion-icon>
-                <span>{{ Math.abs(salesData.trend) }}%</span>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
+  <div *ngIf="!isLoading" class="dashboard-content">
 
-        <!-- Total Products -->
-        <ion-col size="12" size-md="6" size-lg="3">
-          <ion-card class="stat-card products-card">
-            <ion-card-header>
-              <div class="card-icon">
-                <ion-icon name="cube-outline"></ion-icon>
+    <section class="stats-section">
+      <div class="section-header">
+        <h2>Business Overview</h2>
+        <p>Key performance indicators at a glance</p>
+      </div>
+      
+      <ion-grid class="stats-grid">
+        <ion-row>
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="stat-card sales-card">
+              <div class="card-bg-icon">
+                <i class="fas fa-dollar-sign"></i>
               </div>
-              <ion-card-title>{{ inventoryData.totalProducts }}</ion-card-title>
-              <ion-card-subtitle>Total Products</ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="sub-text">{{ inventoryData.inStock }} in stock</div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <!-- Low Stock Alerts -->
-        <ion-col size="12" size-md="6" size-lg="3">
-          <ion-card class="stat-card alert-card">
-            <ion-card-header>
-              <div class="card-icon">
-                <ion-icon name="warning-outline"></ion-icon>
-              </div>
-              <ion-card-title>{{ inventoryData.lowStockCount }}</ion-card-title>
-              <ion-card-subtitle>Low Stock</ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="sub-text" *ngIf="inventoryData.lowStockCount > 0">Needs attention</div>
-              <div class="sub-text" *ngIf="inventoryData.lowStockCount === 0">All good</div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-
-        <!-- Total Orders -->
-        <ion-col size="12" size-md="6" size-lg="3">
-          <ion-card class="stat-card orders-card">
-            <ion-card-header>
-              <div class="card-icon">
-                <ion-icon name="cart-outline"></ion-icon>
-              </div>
-              <ion-card-title>{{ salesData.totalOrders }}</ion-card-title>
-              <ion-card-subtitle>Total Orders</ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="trend" [class.positive]="salesData.orderTrend >= 0" [class.negative]="salesData.orderTrend < 0">
-                <ion-icon [name]="salesData.orderTrend >= 0 ? 'trending-up' : 'trending-down'"></ion-icon>
-                <span>{{ Math.abs(salesData.orderTrend) }}%</span>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
-
-    <!-- Charts Section -->
-    <ion-grid class="charts-grid">
-      <ion-row>
-        <!-- Sales Chart -->
-        <ion-col size="12" size-lg="8">
-          <ion-card class="chart-card">
-            <ion-card-header>
-              <div class="chart-header">
-                <div class="chart-title">
-                  <ion-card-title>Sales Overview</ion-card-title>
-                  <ion-card-subtitle>{{ getPeriodLabel() }} Performance</ion-card-subtitle>
+              <ion-card-header>
+                <div class="card-icon">
+                  <i class="fas fa-chart-line"></i>
                 </div>
-                <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange()" class="chart-period-selector">
-                  <ion-segment-button value="today">
-                    <ion-label>Today</ion-label>
-                  </ion-segment-button>
-                  <ion-segment-button value="weekly">
-                    <ion-label>Weekly</ion-label>
-                  </ion-segment-button>
-                  <ion-segment-button value="monthly">
-                    <ion-label>Monthly</ion-label>
-                  </ion-segment-button>
-                </ion-segment>
-              </div>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="chart-container">
-                <div class="chart-wrapper">
-                  <canvas #salesChartCanvas></canvas>
+                <ion-card-title>{{ formatCurrency(salesData.totalSales) }}</ion-card-title>
+                <ion-card-subtitle>Total Sales</ion-card-subtitle>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="trend" [class.positive]="salesData.trend >= 0" [class.negative]="salesData.trend < 0">
+                  <i class="fas" [class.fa-arrow-up]="salesData.trend >= 0" [class.fa-arrow-down]="salesData.trend < 0"></i>
+                  <span>{{ Math.abs(salesData.trend) }}% {{ salesData.trend >= 0 ? 'increase' : 'decrease' }}</span>
                 </div>
-                <div class="chart-legend" *ngIf="salesChartData.length > 0">
-                  <div class="legend-item" *ngFor="let data of salesChartData">
-                    <span class="legend-label">{{ data.label }}</span>
-                    <span class="legend-value">{{ formatCurrency(data.sales) }}</span>
+                <div class="period">vs last period</div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+
+   
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="stat-card products-card">
+              <div class="card-bg-icon">
+                <i class="fas fa-cube"></i>
+              </div>
+              <ion-card-header>
+                <div class="card-icon">
+                  <i class="fas fa-boxes"></i>
+                </div>
+                <ion-card-title>{{ inventoryData.totalProducts }}</ion-card-title>
+                <ion-card-subtitle>Total Products</ion-card-subtitle>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="stock-info">
+                  <div class="stock-item">
+                    <span class="stock-label">In Stock</span>
+                    <span class="stock-value">{{ inventoryData.inStock }}</span>
+                  </div>
+                  <div class="stock-item">
+                    <span class="stock-label">Out of Stock</span>
+                    <span class="stock-value">{{ inventoryData.totalProducts - inventoryData.inStock }}</span>
                   </div>
                 </div>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
 
-        <!-- Top Products Chart -->
-        <ion-col size="12" size-lg="4">
-          <ion-card class="chart-card">
-            <ion-card-header>
-              <ion-card-title>Top Products</ion-card-title>
-              <ion-card-subtitle>Best Sellers</ion-card-subtitle>
-            </ion-card-header>
-            <ion-card-content>
-              <div class="top-products-list">
-                <div class="product-item" *ngFor="let product of topProducts; let i = index">
-                  <div class="product-rank">#{{ i + 1 }}</div>
-                  <div class="product-info">
-                    <div class="product-name">{{ product.name }}</div>
-                    <div class="product-sales">{{ product.quantity }} sold</div>
-                  </div>
-                  <div class="product-amount">{{ formatCurrency(product.total) }}</div>
+    
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="stat-card alert-card">
+              <div class="card-bg-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <ion-card-header>
+                <div class="card-icon">
+                  <i class="fas fa-bell"></i>
                 </div>
-              </div>
-              
-              <div class="empty-state" *ngIf="topProducts.length === 0">
-                <ion-icon name="stats-chart-outline"></ion-icon>
-                <h3>No sales data</h3>
-                <p>Sales data will appear here</p>
-              </div>
-            </ion-card-content>
-          </ion-card>
-        </ion-col>
-      </ion-row>
-    </ion-grid>
+                <ion-card-title>{{ inventoryData.lowStockCount }}</ion-card-title>
+                <ion-card-subtitle>Low Stock</ion-card-subtitle>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="alert-status" *ngIf="inventoryData.lowStockCount > 0">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <span>Needs attention</span>
+                </div>
+                <div class="alert-status good" *ngIf="inventoryData.lowStockCount === 0">
+                  <i class="fas fa-check-circle"></i>
+                  <span>All good</span>
+                </div>
+                <div class="period">Products below threshold</div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
 
-    <!-- Low Stock Alerts Section -->
-    <ion-card class="alerts-card" *ngIf="inventoryData.lowStockItems.length > 0">
-      <ion-card-header>
-        <ion-card-title>
-          <ion-icon name="warning" color="warning"></ion-icon>
-          Low Stock Alerts
-        </ion-card-title>
-        <ion-card-subtitle>Products needing restock</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-list lines="none">
-          <ion-item *ngFor="let item of inventoryData.lowStockItems" class="alert-item">
-            <ion-label>
-              <h3>{{ item.name }}</h3>
-              <p>Current stock: {{ item.currentStock }}</p>
-            </ion-label>
-            <ion-badge slot="end" color="warning">Low</ion-badge>
-          </ion-item>
-        </ion-list>
-      </ion-card-content>
-    </ion-card>
+         
+          <ion-col size="12" size-md="6" size-lg="3">
+            <ion-card class="stat-card orders-card">
+              <div class="card-bg-icon">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+              <ion-card-header>
+                <div class="card-icon">
+                  <i class="fas fa-receipt"></i>
+                </div>
+                <ion-card-title>{{ salesData.totalOrders }}</ion-card-title>
+                <ion-card-subtitle>Total Orders</ion-card-subtitle>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="trend" [class.positive]="salesData.orderTrend >= 0" [class.negative]="salesData.orderTrend < 0">
+                  <i class="fas" [class.fa-arrow-up]="salesData.orderTrend >= 0" [class.fa-arrow-down]="salesData.orderTrend < 0"></i>
+                  <span>{{ Math.abs(salesData.orderTrend) }}% {{ salesData.orderTrend >= 0 ? 'increase' : 'decrease' }}</span>
+                </div>
+                <div class="period">vs last period</div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </section>
+
+    <section class="charts-section">
+      <div class="section-header">
+        <h2>Performance Analytics</h2>
+        <p>Track your sales and product performance</p>
+      </div>
+      
+      <ion-grid class="charts-grid">
+        <ion-row>
+    
+          <ion-col size="12" size-lg="8">
+            <ion-card class="chart-card">
+              <ion-card-header>
+                <div class="chart-header">
+                  <div class="chart-title">
+                    <ion-card-title>Sales Overview</ion-card-title>
+                    <ion-card-subtitle>{{ getPeriodLabel() }} Performance</ion-card-subtitle>
+                  </div>
+                  <ion-segment [(ngModel)]="selectedPeriod" (ionChange)="onPeriodChange()" class="chart-period-selector">
+                    <ion-segment-button value="today">
+                      <ion-label>Today</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="weekly">
+                      <ion-label>Weekly</ion-label>
+                    </ion-segment-button>
+                    <ion-segment-button value="monthly">
+                      <ion-label>Monthly</ion-label>
+                    </ion-segment-button>
+                  </ion-segment>
+                </div>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="chart-container">
+                  <div class="chart-wrapper">
+                    <canvas #salesChartCanvas></canvas>
+                  </div>
+                  <div class="chart-legend" *ngIf="salesChartData.length > 0">
+                    <div class="legend-item" *ngFor="let data of salesChartData">
+                      <span class="legend-color" [style.background]="data.color"></span>
+                      <span class="legend-label">{{ data.label }}</span>
+                      <span class="legend-value">{{ formatCurrency(data.sales) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+
+          <ion-col size="12" size-lg="4">
+            <ion-card class="chart-card">
+              <ion-card-header>
+                <div class="chart-header">
+                  <div class="chart-title">
+                    <ion-card-title>Top Products</ion-card-title>
+                    <ion-card-subtitle>Best Sellers</ion-card-subtitle>
+                  </div>
+                  <ion-button fill="clear" class="view-all-button">
+                    View All
+                    <i class="fas fa-chevron-right"></i>
+                  </ion-button>
+                </div>
+              </ion-card-header>
+              <ion-card-content>
+                <div class="top-products-list">
+                  <div class="product-item" *ngFor="let product of topProducts; let i = index">
+                    <div class="product-rank" [class.top-rank]="i < 3">#{{ i + 1 }}</div>
+                    <div class="product-info">
+                      <div class="product-name">{{ product.name }}</div>
+                      <div class="product-sales">{{ product.quantity }} sold</div>
+                    </div>
+                    <div class="product-amount">{{ formatCurrency(product.total) }}</div>
+                  </div>
+                </div>
+                
+                <div class="empty-state" *ngIf="topProducts.length === 0">
+                  <i class="fas fa-chart-bar"></i>
+                  <h3>No sales data</h3>
+                  <p>Sales data will appear here</p>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </section>
+
+    <section class="alerts-section" *ngIf="inventoryData.lowStockItems.length > 0">
+      <div class="section-header">
+        <h2>Inventory Alerts</h2>
+        <p>Products that need your attention</p>
+      </div>
+      
+      <ion-card class="alerts-card">
+        <ion-card-header>
+          <div class="alert-header">
+            <div class="alert-title">
+              <i class="fas fa-exclamation-triangle"></i>
+              <ion-card-title>Low Stock Alerts</ion-card-title>
+            </div>
+            <ion-badge color="warning" class="alert-count">{{ inventoryData.lowStockItems.length }}</ion-badge>
+          </div>
+          <ion-card-subtitle>Products needing restock</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list lines="none" class="alert-list">
+            <ion-item *ngFor="let item of inventoryData.lowStockItems" class="alert-item">
+              <ion-avatar slot="start" class="product-avatar">
+                <img [src]="item.image || 'assets/images/product-placeholder.png'" [alt]="item.name" />
+              </ion-avatar>
+              <ion-label>
+                <h3>{{ item.name }}</h3>
+                <p>Current stock: {{ item.currentStock }}</p>
+                <p class="stock-threshold">Threshold: {{ item.threshold }}</p>
+              </ion-label>
+              <div class="alert-actions" slot="end">
+                <ion-button fill="clear" size="small" class="action-button">
+                  <i class="fas fa-edit"></i>
+                </ion-button>
+                <ion-button fill="clear" size="small" class="action-button">
+                  <i class="fas fa-sync-alt"></i>
+                </ion-button>
+              </div>
+            </ion-item>
+          </ion-list>
+        </ion-card-content>
+      </ion-card>
+    </section>
   </div>
 </ion-content>
+
+<ion-modal [isOpen]="isProfileModalOpen" (ionModalDidDismiss)="closeProfile()" class="profile-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Profile Management</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeProfile()">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    
+    <ion-content class="profile-modal-content">
+      <div class="profile-form">
+        <div class="avatar-section">
+          <ion-avatar class="modal-avatar">
+            <img [src]="user?.avatar || 'assets/images/user-avatar.png'" alt="Profile" />
+          </ion-avatar>
+          <ion-button fill="clear" class="change-avatar-btn">
+            <i class="fas fa-camera"></i>
+            Change Photo
+          </ion-button>
+        </div>
+
+        <ion-list lines="none" class="form-list">
+          <ion-item>
+            <ion-label position="stacked">Full Name</ion-label>
+            <ion-input [value]="user?.name" placeholder="Enter your name"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Email</ion-label>
+            <ion-input [value]="user?.email" type="email" placeholder="Enter your email"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Phone Number</ion-label>
+            <ion-input [value]="user?.phone" type="tel" placeholder="Enter your phone number"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Role</ion-label>
+            <ion-select [value]="user?.role" placeholder="Select role">
+              <ion-select-option value="admin">Administrator</ion-select-option>
+              <ion-select-option value="manager">Manager</ion-select-option>
+              <ion-select-option value="user">User</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-label position="stacked">Bio</ion-label>
+            <ion-textarea 
+              [value]="user?.bio" 
+              placeholder="Tell us about yourself"
+              rows="4">
+            </ion-textarea>
+          </ion-item>
+        </ion-list>
+
+        <div class="form-actions">
+          <ion-button expand="block" fill="outline" (click)="closeProfile()">
+            Cancel
+          </ion-button>
+          <ion-button expand="block" fill="solid" (click)="saveProfile()">
+            Save Changes
+          </ion-button>
+        </div>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>

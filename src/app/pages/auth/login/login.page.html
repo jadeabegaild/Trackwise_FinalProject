@@ -9,7 +9,6 @@
     <ion-card>
       <ion-card-content>
         <form [formGroup]="loginForm" (ngSubmit)="login()">
-          <!-- Email Field -->
           <ion-item class="form-item" [class.invalid]="email?.invalid && email?.touched">
             <ion-label position="stacked" class="input-label">
               Email Address <span class="required">*</span>
@@ -23,7 +22,6 @@
             <ion-icon name="mail-outline" slot="start" class="input-icon"></ion-icon>
           </ion-item>
 
-          <!-- Validation Messages for Email -->
           <div class="error-message" *ngIf="email?.invalid && email?.touched">
             <ion-text color="danger" *ngIf="email?.errors?.['required']">
               Email is required
@@ -33,7 +31,6 @@
             </ion-text>
           </div>
 
-          <!-- Password Field -->
           <ion-item class="form-item" [class.invalid]="password?.invalid && password?.touched">
             <ion-label position="stacked" class="input-label">
               Password <span class="required">*</span>
@@ -54,14 +51,12 @@
             </ion-button>
           </ion-item>
 
-          <!-- Validation Messages for Password -->
           <div class="error-message" *ngIf="password?.invalid && password?.touched">
             <ion-text color="danger" *ngIf="password?.errors?.['required']">
               Password is required
             </ion-text>
           </div>
 
-          <!-- Forgot Password Link -->
           <div class="forgot-password ion-text-end">
             <ion-button 
               fill="clear" 
@@ -72,7 +67,6 @@
             </ion-button>
           </div>
 
-          <!-- Login Button -->
           <ion-button 
             type="submit" 
             expand="block" 
@@ -84,7 +78,6 @@
           </ion-button>
         </form>
 
-        <!-- Register Link -->
         <div class="register-link">
           <p>Don't have an account?</p>
           <ion-button 

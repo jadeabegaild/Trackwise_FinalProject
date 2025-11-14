@@ -43,12 +43,12 @@ export class LoginPage implements OnInit {
 
         await loading.dismiss();
 
-        // Navigate to dashboard with default tab (pos)
+  
         this.router.navigate(['/dashboard/pos']);
       } catch (error: any) {
         await loading.dismiss();
 
-        // Enhanced error handling
+
         let errorMessage = 'Login failed. Please try again.';
         let showResendButton = false;
 
@@ -70,7 +70,7 @@ export class LoginPage implements OnInit {
             errorMessage =
               'This account has been disabled. Please contact support.';
             break;
-          case 'EMAIL_NOT_VERIFIED': // Custom error from our auth service
+          case 'EMAIL_NOT_VERIFIED': 
             errorMessage =
               'Please verify your email address before logging in. Check your inbox for the verification email.';
             showResendButton = true;
@@ -98,7 +98,6 @@ export class LoginPage implements OnInit {
         await alert.present();
       }
     } else {
-      // Mark all fields as touched to show validation errors
       Object.keys(this.loginForm.controls).forEach((key) => {
         this.loginForm.get(key)?.markAsTouched();
       });
@@ -117,9 +116,6 @@ export class LoginPage implements OnInit {
       if (!email) {
         throw new Error('Email is required');
       }
-
-      // We need to sign in temporarily to send verification email
-      // Or you can modify your auth service to accept email parameter
       await this.authService.resendEmailVerification();
 
       await loading.dismiss();

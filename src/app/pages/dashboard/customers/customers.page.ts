@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core'
 import { Timestamp } from '@angular/fire/firestore';
 import { ReportsService, Order, OrderItem } from '../../../services/reports';
 import { ProductService, Product } from '../../../services/product.service';
+import { AuthService, UserData } from 'src/app/services/auth'; 
 
 interface SalesData {
   totalSales: number;
@@ -32,13 +33,13 @@ interface TopProduct {
 export class CustomerPage implements OnInit {
   private reportsService = inject(ReportsService);
   private productService = inject(ProductService);
+  private authService = inject(AuthService); 
   
   @ViewChild('salesChartCanvas') salesChartCanvas!: ElementRef;
   
   isLoading: boolean = true;
   selectedPeriod: string = 'today';
   
-  // Data objects
   salesData: SalesData = {
     totalSales: 0,
     totalOrders: 0,
@@ -58,24 +59,179 @@ export class CustomerPage implements OnInit {
   allOrders: Order[] = [];
   allProducts: Product[] = [];
   
-  // Make Math available in template
   Math = Math;
+  isSidebarOpen: boolean = false;
+  isProfileModalOpen: boolean = false;
+  currentPage: string = 'dashboard';
+  contentId: string = 'main-content';
+  user: any = {
+    name: '',
+    email: '',
+    avatar: 'assets/images/user-avatar.png',
+    role: 'user',
+    phone: '',
+    bio: '',
+    notificationsEnabled: true
+  };
+  userData: UserData | null = null;
 
   ngOnInit() {
     this.loadCustomerData();
+    this.loadUserData(); 
+  }
+
+  private loadUserData(): void {
+    this.authService.user$.subscribe({
+      next: async (user) => {
+        if (user) {
+          this.userData = await this.authService.getUserData(user.uid);
+          
+          this.user = {
+            name: user.displayName || this.userData?.businessName || 'User Name',
+            email: user.email || '',
+            avatar: user.photoURL || 'assets/images/user-avatar.png',
+            role: this.userData?.role || 'user',
+            phone: this.userData?.phone || '',
+            bio: '', 
+            notificationsEnabled: true
+          };
+        } else {
+          this.user = {
+            name: '',
+            email: '',
+            avatar: 'assets/images/user-avatar.png',
+            role: 'user',
+            phone: '',
+            bio: '',
+            notificationsEnabled: true
+          };
+          this.userData = null;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user data:', error);
+      }
+    });
+  }
+
+  toggleSidebar(): void {
+    this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  openProfile(): void {
+    this.isProfileModalOpen = true;
+    this.isSidebarOpen = false;
+  }
+
+  closeProfile(): void {
+    this.isProfileModalOpen = false;
+  }
+
+  async saveProfile(): Promise<void> {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    try {
+      await updateProfile(user, {
+        displayName: this.user.name,
+        photoURL: this.user.avatar
+      });
+
+      if (this.userData) {
+        await this.authService.updateUserData(user.uid, {
+          businessName: this.user.name,
+          phone: this.user.phone,
+          displayName: this.user.name
+        });
+      }
+
+      console.log('Profile updated successfully');
+      this.closeProfile();
+      
+      this.loadUserData();
+      
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    }
+  }
+
+  navigateTo(page: string): void {
+    this.currentPage = page;
+    this.isSidebarOpen = false;
+    
+    switch (page) {
+      case 'dashboard':
+        break;
+      case 'products':
+        break;
+      case 'orders':
+        break;
+      case 'customers':
+        break;
+      case 'inventory':
+        break;
+      case 'reports':
+        break;
+    }
+  }
+
+  editProfile(): void {
+    this.openProfile();
+  }
+
+  async changePassword(): Promise<void> {
+    const email = this.authService.getUserEmail();
+    if (email) {
+      try {
+        await this.authService.sendPasswordResetEmail(email);
+        console.log('Password reset email sent');
+      } catch (error) {
+        console.error('Error sending password reset email:', error);
+      }
+    }
+  }
+
+  notificationSettings(): void {
+    this.user.notificationsEnabled = !this.user.notificationsEnabled;
+    console.log(`Notifications ${this.user.notificationsEnabled ? 'enabled' : 'disabled'}`);
+    
+    const user = this.authService.getCurrentUser();
+    if (user && this.userData) {
+      this.authService.updateUserData(user.uid, {
+      } as Partial<UserData>);
+    }
+  }
+
+  privacySettings(): void {
+    console.log('Privacy settings clicked');
+  }
+
+  preferences(): void {
+    console.log('Preferences clicked');
+  }
+
+  helpSupport(): void {
+    console.log('Help & support clicked');
+  }
+
+  async logout(): Promise<void> {
+    try {
+      await this.authService.logout();
+      console.log('User logged out successfully');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   }
 
   loadCustomerData() {
     this.isLoading = true;
     
-    // Load both orders and products
     this.reportsService.getOrders().subscribe({
       next: (orders) => {
         this.allOrders = orders;
         this.calculateSalesData(orders);
         this.calculateTopProducts(orders);
         
-        // Now load products for inventory data
         this.productService.getProducts().subscribe({
           next: (products) => {
             this.allProducts = products;
@@ -104,15 +260,12 @@ export class CustomerPage implements OnInit {
     const filteredOrders = this.filterOrdersByPeriod(orders);
     const previousPeriodOrders = this.getPreviousPeriodOrders(orders);
     
-    // Current period calculations
     this.salesData.totalSales = filteredOrders.reduce((sum, order) => sum + order.total, 0);
     this.salesData.totalOrders = filteredOrders.length;
     
-    // Previous period calculations for trends
     const previousSales = previousPeriodOrders.reduce((sum, order) => sum + order.total, 0);
     const previousOrders = previousPeriodOrders.length;
     
-    // Calculate trends
     this.salesData.trend = previousSales > 0 
       ? ((this.salesData.totalSales - previousSales) / previousSales) * 100 
       : this.salesData.totalSales > 0 ? 100 : 0;
@@ -241,19 +394,18 @@ export class CustomerPage implements OnInit {
   }
 
   private generateInventoryData(products: Product[]) {
-    // Use actual product data from Firebase with quantity field
     const lowStockItems = products
-      .filter(product => product.quantity <= 10) // Use quantity field with low stock threshold
+      .filter(product => product.quantity <= 10) 
       .map(product => ({
         name: product.name,
-        currentStock: product.quantity // Use quantity field
+        currentStock: product.quantity 
       }));
     
     this.inventoryData = {
       totalProducts: products.length,
-      inStock: products.reduce((sum, product) => sum + product.quantity, 0), // Use quantity field
+      inStock: products.reduce((sum, product) => sum + product.quantity, 0), 
       lowStockCount: lowStockItems.length,
-      lowStockItems: lowStockItems.slice(0, 5) // Show top 5 low stock items
+      lowStockItems: lowStockItems.slice(0, 5) 
     };
   }
 
@@ -263,7 +415,6 @@ export class CustomerPage implements OnInit {
     
     switch (this.selectedPeriod) {
       case 'today':
-        // Last 12 hours
         for (let i = 11; i >= 0; i--) {
           const hour = new Date(now);
           hour.setHours(now.getHours() - i, 0, 0, 0);
@@ -284,7 +435,6 @@ export class CustomerPage implements OnInit {
         break;
         
       case 'weekly':
-        // Last 7 days with proper day names
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         for (let i = 6; i >= 0; i--) {
           const date = new Date(now);
@@ -307,7 +457,6 @@ export class CustomerPage implements OnInit {
         break;
         
       case 'monthly':
-        // Last 6 months
         for (let i = 5; i >= 0; i--) {
           const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
           const monthStart = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -333,7 +482,6 @@ export class CustomerPage implements OnInit {
     const ctx = this.salesChartCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas dimensions to fill container
     const canvas = this.salesChartCanvas.nativeElement;
     const container = canvas.parentElement;
     if (container) {
@@ -342,12 +490,10 @@ export class CustomerPage implements OnInit {
     }
 
     const maxSales = Math.max(...this.salesChartData.map(d => d.sales));
-    const maxValue = maxSales > 0 ? maxSales * 1.1 : 1000; // Add 10% padding
+    const maxValue = maxSales > 0 ? maxSales * 1.1 : 1000; 
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Chart dimensions with padding
     const padding = {
       top: 40,
       right: 20,
@@ -358,15 +504,12 @@ export class CustomerPage implements OnInit {
     const chartWidth = canvas.width - (padding.left + padding.right);
     const chartHeight = canvas.height - (padding.top + padding.bottom);
 
-    // Draw chart background
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(padding.left, padding.top, chartWidth, chartHeight);
 
-    // Draw grid lines
     ctx.strokeStyle = '#e9ecef';
     ctx.lineWidth = 1;
     
-    // Horizontal grid lines
     const gridLines = 5;
     for (let i = 0; i <= gridLines; i++) {
       const y = padding.top + (i * chartHeight / gridLines);
@@ -376,7 +519,6 @@ export class CustomerPage implements OnInit {
       ctx.stroke();
     }
 
-    // Draw bars
     const barWidth = chartWidth / this.salesChartData.length;
     const barSpacing = barWidth * 0.2;
     const actualBarWidth = barWidth - barSpacing;
@@ -386,7 +528,6 @@ export class CustomerPage implements OnInit {
       const x = padding.left + (index * barWidth) + (barSpacing / 2);
       const y = padding.top + chartHeight - barHeight;
 
-      // Gradient fill
       const gradient = ctx.createLinearGradient(0, y, 0, padding.top + chartHeight);
       gradient.addColorStop(0, '#667eea');
       gradient.addColorStop(1, '#764ba2');
@@ -394,7 +535,6 @@ export class CustomerPage implements OnInit {
       ctx.fillStyle = gradient;
       ctx.fillRect(x, y, actualBarWidth, barHeight);
 
-      // Draw bar value
       if (data.sales > 0) {
         ctx.fillStyle = '#495057';
         ctx.font = '12px Arial';
@@ -402,14 +542,12 @@ export class CustomerPage implements OnInit {
         ctx.fillText(this.formatCurrency(data.sales), x + actualBarWidth / 2, y - 8);
       }
 
-      // Draw label
       ctx.fillStyle = '#6c757d';
       ctx.font = '12px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(data.label, x + actualBarWidth / 2, padding.top + chartHeight + 20);
     });
 
-    // Draw Y-axis labels
     ctx.fillStyle = '#6c757d';
     ctx.font = '11px Arial';
     ctx.textAlign = 'right';
@@ -419,23 +557,19 @@ export class CustomerPage implements OnInit {
       ctx.fillText(this.formatCurrency(Number(value)), padding.left - 10, y + 4);
     }
 
-    // Draw axes
     ctx.strokeStyle = '#495057';
     ctx.lineWidth = 2;
     
-    // Y-axis
     ctx.beginPath();
     ctx.moveTo(padding.left, padding.top);
     ctx.lineTo(padding.left, padding.top + chartHeight);
     ctx.stroke();
 
-    // X-axis
     ctx.beginPath();
     ctx.moveTo(padding.left, padding.top + chartHeight);
     ctx.lineTo(padding.left + chartWidth, padding.top + chartHeight);
     ctx.stroke();
 
-    // Draw zero line if no data
     if (maxSales === 0) {
       ctx.strokeStyle = '#ccc';
       ctx.setLineDash([5, 3]);
@@ -445,7 +579,6 @@ export class CustomerPage implements OnInit {
       ctx.stroke();
       ctx.setLineDash([]);
       
-      // Show "No data" message
       ctx.fillStyle = '#6c757d';
       ctx.font = '16px Arial';
       ctx.textAlign = 'center';
@@ -488,3 +621,5 @@ export class CustomerPage implements OnInit {
     return createdAt;
   }
 }
+
+import { updateProfile } from '@angular/fire/auth';
