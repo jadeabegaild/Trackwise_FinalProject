@@ -50,6 +50,8 @@
   
   .export-btn {
     --border-radius: 10px;
+    --border-color: #10b981;
+    --color: #10b981;
     font-weight: 600;
     font-size: 0.8rem;
     
@@ -57,14 +59,17 @@
       margin-right: 6px;
       font-size: 0.8rem;
     }
+  }
+  
+  .print-btn {
+    --border-radius: 10px;
+    --background: #667eea;
+    font-weight: 600;
+    font-size: 0.8rem;
     
-    &:first-of-type {
-      --border-color: #10b981;
-      --color: #10b981;
-    }
-    
-    &:last-of-type {
-      --background: #ef4444;
+    i {
+      margin-right: 6px;
+      font-size: 0.8rem;
     }
   }
 }
@@ -508,6 +513,80 @@
   }
 }
 
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  
+  #printContent,
+  #printContent * {
+    visibility: visible;
+  }
+  
+  #printContent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    background: white;
+    
+    .print-header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #333;
+      padding-bottom: 20px;
+      
+      h1 {
+        margin: 0 0 10px 0;
+        color: #333;
+        font-size: 24px;
+      }
+      
+      p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+      }
+    }
+    
+    .print-summary,
+    .print-top-products,
+    .print-recent-orders {
+      margin-bottom: 30px;
+      
+      h2 {
+        color: #333;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 8px;
+        margin-bottom: 15px;
+        font-size: 18px;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        
+        th, td {
+          padding: 8px 12px;
+          text-align: left;
+          border: 1px solid #ddd;
+        }
+        
+        th {
+          background-color: #f8f9fa;
+          font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+          background-color: #f8f9fa;
+        }
+      }
+    }
+  }
+}
+
 /* Animations */
 @keyframes slideIn {
   from {
@@ -553,7 +632,8 @@
     gap: 12px;
   }
   
-  .modern-toolbar .export-btn {
+  .modern-toolbar .export-btn,
+  .modern-toolbar .print-btn {
     font-size: 0.7rem;
     
     i {

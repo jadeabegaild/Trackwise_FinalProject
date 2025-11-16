@@ -13,6 +13,59 @@
   --card-hover-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
 }
 
+// Improved modal accessibility styles
+.profile-modal {
+  // Ensure modal is properly layered
+  z-index: 10000;
+  
+  &::part(content) {
+    // Ensure modal content is accessible
+    background: white;
+  }
+  
+  &::part(backdrop) {
+    // Proper backdrop for modal
+    background: var(--ion-backdrop-color, #000);
+    opacity: 0.32;
+  }
+}
+
+// Focus styles for better accessibility
+ion-modal {
+  *:focus-visible {
+    outline: 2px solid var(--ion-color-primary, #3880ff);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  
+  // Ensure form elements are properly styled
+  ion-input:focus-within,
+  ion-select:focus-within,
+  ion-textarea:focus-within {
+    --background: var(--ion-color-light);
+    --border-color: var(--ion-color-primary);
+  }
+}
+
+// High contrast support
+@media (prefers-contrast: high) {
+  .profile-modal {
+    *:focus-visible {
+      outline: 3px solid #000000;
+      outline-offset: 1px;
+    }
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .profile-modal {
+    &::part(content) {
+      animation: none;
+    }
+  }
+}
+
 .modern-toolbar {
   --background: white;
   --border-color: transparent;
@@ -1063,14 +1116,121 @@
   }
 }
 
+// Profile Dropdown Styles
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 16px;
+  width: 280px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e2e8f0;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  
+  &.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  
+  .dropdown-header {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-radius: 12px 12px 0 0;
+    
+    .dropdown-avatar {
+      width: 48px;
+      height: 48px;
+      margin-right: 12px;
+      border: 2px solid white;
+    }
+    
+    .dropdown-user-info {
+      flex: 1;
+      
+      h4 {
+        margin: 0 0 4px 0;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+      }
+      
+      p {
+        margin: 0 0 6px 0;
+        font-size: 0.8rem;
+        color: #64748b;
+      }
+      
+      .role-badge {
+        font-size: 0.7rem;
+      }
+    }
+  }
+  
+  .dropdown-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 0;
+  }
+  
+  .dropdown-menu {
+    padding: 8px 0;
+    
+    .dropdown-item {
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --min-height: 44px;
+      
+      .menu-icon {
+        margin-right: 12px;
+        font-size: 1rem;
+        color: #64748b;
+        width: 16px;
+        text-align: center;
+      }
+      
+      ion-label {
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+      
+      ion-badge {
+        font-size: 0.7rem;
+      }
+      
+      &:hover {
+        --background: #f8fafc;
+      }
+      
+      &.logout-item {
+        --color: #ef4444;
+        
+        .menu-icon {
+          color: #ef4444;
+        }
+      }
+    }
+  }
+}
+
+// Profile Modal Updates
 .profile-modal {
   --width: 500px;
   --max-width: 90vw;
-  --height: 80vh;
+  --height: 85vh;
   --border-radius: 20px;
   
   .profile-modal-content {
-    .profile-form {
+    .profile-form,
+    .password-form,
+    .preferences-form {
       padding: 16px;
       
       .avatar-section {
@@ -1087,10 +1247,23 @@
         .change-avatar-btn {
           --color: #667eea;
           font-size: 0.9rem;
-          text-transform: none;
           
           i {
             margin-right: 6px;
+          }
+        }
+        
+        .upload-progress {
+          margin-top: 8px;
+          text-align: center;
+          
+          ion-progress-bar {
+            margin-bottom: 4px;
+          }
+          
+          span {
+            font-size: 0.8rem;
+            color: #64748b;
           }
         }
       }
@@ -1109,7 +1282,6 @@
             font-weight: 600;
             color: #374151;
             margin-bottom: 8px;
-            text-transform: none;
           }
           
           ion-input, ion-select, ion-textarea {
@@ -1120,6 +1292,42 @@
             background: #f8fafc;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
+          }
+          
+          ion-toggle {
+            margin-right: 0;
+          }
+        }
+      }
+      
+      .error-message {
+        color: #ef4444;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        padding: 0 12px;
+      }
+      
+      .password-requirements {
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 16px 0;
+        border: 1px solid #e2e8f0;
+        
+        p {
+          margin: 0 0 8px 0;
+          font-size: 0.9rem;
+          color: #374151;
+        }
+        
+        ul {
+          margin: 0;
+          padding-left: 16px;
+          
+          li {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 4px;
           }
         }
       }
@@ -1132,7 +1340,6 @@
         ion-button {
           --border-radius: 12px;
           margin: 0;
-          text-transform: none;
           
           &:first-child {
             --background: transparent;
@@ -1143,8 +1350,65 @@
           &:last-child {
             --background: #667eea;
           }
+          
+          &[disabled] {
+            opacity: 0.6;
+          }
         }
       }
+    }
+  }
+}
+
+// Status messages
+.status-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+  font-size: 0.9rem;
+  
+  &.success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+  
+  &.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+  
+  &.info {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .profile-dropdown {
+    right: 8px;
+    width: 260px;
+  }
+  
+  .profile-modal {
+    --width: 95vw;
+    --height: 90vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-dropdown {
+    width: 240px;
+  }
+  
+  .profile-modal .profile-modal-content {
+    .profile-form,
+    .password-form,
+    .preferences-form {
+      padding: 12px;
     }
   }
 }

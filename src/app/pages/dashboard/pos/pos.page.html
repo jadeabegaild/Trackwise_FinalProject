@@ -54,7 +54,7 @@
       <!-- Static "All" button -->
       <ion-segment-button value="all" class="category-btn">
         <div class="category-content">
-          <i class="fas fa-th-large"></i>
+          <!-- <i class="fas fa-th-large"></i> -->
           <ion-label>All</ion-label>
         </div>
       </ion-segment-button>
@@ -62,7 +62,7 @@
       <!-- Dynamic categories from Firebase -->
       <ion-segment-button *ngFor="let cat of categories" [value]="cat" class="category-btn">
         <div class="category-content">
-          <i class="fas fa-tag"></i>
+          <!-- <i class="fas fa-tag"></i> -->
           <ion-label>{{ cat | titlecase }}</ion-label>
         </div>
       </ion-segment-button>
