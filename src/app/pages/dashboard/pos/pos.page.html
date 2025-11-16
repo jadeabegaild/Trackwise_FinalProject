@@ -47,40 +47,30 @@
     </div>
   </section>
 
-  <!-- Categories Section -->
-  <section class="categories-section">
-    <div class="categories-container">
-      <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)" class="modern-segment">
-        <ion-segment-button value="all" class="category-btn">
-          <div class="category-content">
-            <i class="fas fa-th-large"></i>
-            <ion-label>All</ion-label>
-          </div>
-        </ion-segment-button>
-        
-        <ion-segment-button value="electronics" class="category-btn">
-          <div class="category-content">
-            <i class="fas fa-laptop"></i>
-            <ion-label>Electronics</ion-label>
-          </div>
-        </ion-segment-button>
-        
-        <ion-segment-button value="clothing" class="category-btn">
-          <div class="category-content">
-            <i class="fas fa-tshirt"></i>
-            <ion-label>Clothing</ion-label>
-          </div>
-        </ion-segment-button>
-        
-        <ion-segment-button value="food" class="category-btn">
-          <div class="category-content">
-            <i class="fas fa-utensils"></i>
-            <ion-label>Food</ion-label>
-          </div>
-        </ion-segment-button>
-      </ion-segment>
-    </div>
-  </section>
+<section class="categories-section">
+  <div class="categories-container">
+    <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)" class="modern-segment">
+
+      <!-- Static "All" button -->
+      <ion-segment-button value="all" class="category-btn">
+        <div class="category-content">
+          <i class="fas fa-th-large"></i>
+          <ion-label>All</ion-label>
+        </div>
+      </ion-segment-button>
+
+      <!-- Dynamic categories from Firebase -->
+      <ion-segment-button *ngFor="let cat of categories" [value]="cat" class="category-btn">
+        <div class="category-content">
+          <i class="fas fa-tag"></i>
+          <ion-label>{{ cat | titlecase }}</ion-label>
+        </div>
+      </ion-segment-button>
+
+    </ion-segment>
+  </div>
+</section>
+
 
   <!-- Products Grid -->
   <section class="products-section">
@@ -197,7 +187,8 @@
                   <i class="fas fa-minus"></i>
                 </ion-button>
                 
-                <span class="quantity-display">{{item.quantity}}</span>
+                <span class="quantity-display">{{item.cartQuantity}}</span>
+
                 
                 <ion-button (click)="increaseQuantity(i)" class="qty-btn" fill="clear" size="small">
                   <i class="fas fa-plus"></i>
@@ -243,10 +234,6 @@
             <span class="summary-value">₱{{getSubtotal() | number:'1.2-2'}}</span>
           </div>
           
-          <div class="summary-item">
-            <span class="summary-label">Tax (12%)</span>
-            <span class="summary-value">₱{{getTax() | number:'1.2-2'}}</span>
-          </div>
           
           <div class="summary-divider"></div>
           
@@ -269,15 +256,91 @@
               </div>
             </ion-col>
             
-            <ion-col size="4">
-              <ion-button (click)="checkout()" expand="block" class="checkout-btn">
-                <i class="fas fa-credit-card"></i>
-                Checkout
-              </ion-button>
-            </ion-col>
+            <ion-item>
+              <ion-label position="stacked">Customer Payment</ion-label>
+              <ion-input type="number" [(ngModel)]="customerPayment" (ionChange)="calculateChange()"></ion-input>
+            </ion-item>
+
+            <div *ngIf="customerPayment > 0">
+              <p>Total Amount: ₱{{getTotal() | number:'1.2-2'}}</p>
+              <p>Change: ₱{{changeAmount | number:'1.2-2'}}</p>
+            </div>
+
+            <ion-button (click)="checkout()" [disabled]="customerPayment < getTotal()" expand="block">
+              Complete Payment
+            </ion-button>
+
           </ion-row>
         </ion-grid>
       </ion-toolbar>
     </ion-footer>
+  </ng-template>
+</ion-modal>
+
+<ion-modal [isOpen]="isReceiptOpen" (didDismiss)="isReceiptOpen = false" class="receipt-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar class="receipt-toolbar">
+        <ion-title>
+          <h2 class="receipt-title">🧾 POS Receipt</h2>
+        </ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="isReceiptOpen = false">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="receipt-content" fullscreen>
+      <!-- Receipt Header -->
+      <div class="receipt-header-section">
+        <h3 class="store-name">TrackWise</h3>
+        <p class="receipt-date">{{receiptData?.date | date:'medium'}}</p>
+        <hr />
+      </div>
+
+      <!-- Items List -->
+      <ion-list class="receipt-items-list">
+        <ion-item *ngFor="let item of receiptData?.items" lines="none" class="receipt-item">
+          <ion-label class="item-label">
+            <div class="item-name">{{item.name}}</div>
+            <div class="item-quantity-price">
+              <span>x{{item.cartQuantity}}</span>
+              <span>₱{{(item.price * item.cartQuantity) | number:'1.2-2'}}</span>
+            </div>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+      <hr />
+
+      <!-- Summary Section -->
+      <div class="receipt-summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>₱{{receiptData?.total | number:'1.2-2'}}</span>
+        </div>
+        <div class="summary-row">
+          <span>Payment</span>
+          <span>₱{{receiptData?.payment | number:'1.2-2'}}</span>
+        </div>
+        <div class="summary-row total-row">
+          <strong>Total</strong>
+          <strong>₱{{receiptData?.total | number:'1.2-2'}}</strong>
+        </div>
+        <div class="summary-row change-row">
+          <span>Change</span>
+          <span>₱{{receiptData?.change | number:'1.2-2'}}</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="receipt-footer">
+        <p>Thank you for shopping with us!</p>
+        <ion-button expand="block" fill="outline" (click)="isReceiptOpen = false">
+          Close
+        </ion-button>
+      </div>
+    </ion-content>
   </ng-template>
 </ion-modal>

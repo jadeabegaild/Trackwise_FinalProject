@@ -21,6 +21,14 @@ export class PosPage implements OnInit, OnDestroy {
   selectedCategory: string = 'all';
   searchTerm: string = '';
   isCartOpen: boolean = false;
+  categories: string[] = [];
+  customerPayment: number = 0;
+  changeAmount: number = 0;
+  isReceiptOpen: boolean = false;
+  receiptData: any;
+
+
+
 
   private productsSubscription: Subscription | undefined;
 
@@ -37,18 +45,23 @@ export class PosPage implements OnInit, OnDestroy {
     });
     await loading.present();
 
-    this.productsSubscription = this.productService.getProducts().subscribe(
-      (products) => {
-        this.products = products;
-        this.filteredProducts = [...this.products];
-        loading.dismiss();
-      },
-      async (error) => {
-        console.error('Error loading products:', error);
-        await loading.dismiss();
-        this.presentErrorAlert('Failed to load products');
-      }
-    );
+   this.productsSubscription = this.productService.getProducts().subscribe(
+  (products) => {
+    this.products = products;
+    this.filteredProducts = [...this.products];
+
+    // Load categories dynamically
+    this.loadCategories();
+
+    loading.dismiss();
+  },
+  async (error) => {
+    console.error('Error loading products:', error);
+    await loading.dismiss();
+    this.presentErrorAlert('Failed to load products');
+  }
+);
+
   }
 
   ngOnDestroy() {
@@ -56,6 +69,13 @@ export class PosPage implements OnInit, OnDestroy {
       this.productsSubscription.unsubscribe();
     }
   }
+
+  loadCategories() {
+  this.productService.getCategories().subscribe((cats: string[]) => {
+    this.categories = [...cats]; // remove 'all'
+  });
+}
+
 
   searchProducts(event: any) {
     this.searchTerm = event.detail.value.toLowerCase();
@@ -134,13 +154,19 @@ export class PosPage implements OnInit, OnDestroy {
     );
   }
 
-  getTax(): number {
-    return this.getSubtotal() * 0.12; // 12% VAT in Philippines
-  }
+  // getTax(): number {
+  //   return this.getSubtotal() * 0.12; // 12% VAT in Philippines
+  // }
 
   getTotal(): number {
-    return this.getSubtotal() + this.getTax();
+    return this.getSubtotal();
   }
+
+  calculateChange() {
+  const total = this.getTotal();
+  this.changeAmount = this.customerPayment - total;
+  }
+
 
   openCart() {
     this.isCartOpen = true;
@@ -172,7 +198,7 @@ export class PosPage implements OnInit, OnDestroy {
           image: item.image,
         })),
         subtotal: this.getSubtotal(),
-        tax: this.getTax(),
+        // tax: this.getTax(),
         total: this.getTotal(),
         status: 'completed',
         // userId will be added automatically by the service
@@ -204,19 +230,40 @@ export class PosPage implements OnInit, OnDestroy {
         }
       });
 
+    // Save order and update stock as before...
       await loading.dismiss();
 
-      // Show success message
-      const alert = await this.alertController.create({
-        header: 'Checkout Successful',
-        message: `Total: ${this.formatCurrency(this.getTotal())}`,
-        buttons: ['OK'],
-      });
-      await alert.present();
+   // Save cart snapshot for receipt
+const receiptItems = [...this.cartItems];
+const totalAmount = this.getTotal();
+const paymentAmount = this.customerPayment;
+const changeAmount = this.changeAmount;
 
-      // Clear cart and close modal
-      this.clearCart();
-      this.closeCart();
+// Set receipt data
+this.receiptData = {
+  items: receiptItems,
+  total: totalAmount,
+  payment: paymentAmount,
+  change: changeAmount,
+  date: new Date()
+};
+
+// Open receipt modal first
+this.isReceiptOpen = true;
+
+// Then clear cart and reset payment
+this.clearCart();
+this.closeCart();
+this.customerPayment = 0;
+this.changeAmount = 0;
+
+// Show success alert
+const alert = await this.alertController.create({
+  header: 'Checkout Successful',
+  message: `Total: ${this.formatCurrency(totalAmount)}`,
+  buttons: ['OK'],
+});
+await alert.present();
     } catch (error) {
       console.error('Error during checkout:', error);
       await loading.dismiss();

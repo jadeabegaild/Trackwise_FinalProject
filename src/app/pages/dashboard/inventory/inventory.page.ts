@@ -20,6 +20,11 @@ export class InventoryPage implements OnInit, OnDestroy {
   editingProductId: string | null = null;
   productForm: FormGroup;
   isBarcodeScannerAvailable: boolean = false;
+  isCategoryModalOpen: boolean = false;
+  categoryForm: FormGroup;
+  categories: string[] = [];
+
+
   
   private productsSubscription: Subscription | undefined;
 
@@ -39,6 +44,10 @@ export class InventoryPage implements OnInit, OnDestroy {
     });
 
     this.isBarcodeScannerAvailable = !!(window as any).cordova || !!(window as any).Capacitor;
+    this.categoryForm = this.formBuilder.group({
+      name: ['', Validators.required]
+    });
+
   }
 
   async ngOnInit() {
@@ -59,6 +68,7 @@ export class InventoryPage implements OnInit, OnDestroy {
         this.presentErrorAlert('Failed to load products');
       }
     );
+    this.loadCategories(); // <-- add this
   }
 
   ngOnDestroy() {
@@ -66,6 +76,11 @@ export class InventoryPage implements OnInit, OnDestroy {
       this.productsSubscription.unsubscribe();
     }
   }
+  loadCategories() {
+  this.productService.getCategories().subscribe((cats: string[]) => {
+    this.categories = cats;
+  });
+}
 
   // ADD THIS METHOD - Get current user ID
   private getCurrentUserId(): string {
@@ -267,6 +282,38 @@ export class InventoryPage implements OnInit, OnDestroy {
     }
   }
 
+
+
+  openAddCategoryModal() {
+    this.categoryForm.reset();
+    this.isCategoryModalOpen = true;
+  }
+
+  closeCategoryModal() {
+  this.isCategoryModalOpen = false;
+  }
+
+async saveCategory() {
+  if (this.categoryForm.valid) {
+    const newCategory = this.categoryForm.value.name.toLowerCase();
+
+    if (!this.categories.includes(newCategory)) {
+      try {
+        await this.productService.addCategory(newCategory); // save to Firestore
+        this.categories.push(newCategory); // update local array
+        this.closeCategoryModal();
+      } catch (error) {
+        console.error('Error saving category:', error);
+        this.presentErrorAlert('Failed to save category');
+      }
+    } else {
+      this.presentErrorAlert('Category already exists');
+    }
+  }
+}
+
+
+
   private generateBarcode(): string {
     return Math.random().toString().substr(2, 12);
   }
@@ -280,3 +327,4 @@ export class InventoryPage implements OnInit, OnDestroy {
     await alert.present();
   }
 }
+
