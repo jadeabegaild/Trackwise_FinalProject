@@ -9,10 +9,13 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where
+  where,
+  setDoc
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { Auth } from '@angular/fire/auth';
+import { map } from 'rxjs/operators';
+
 
 export interface Product {
   id?: string;
@@ -152,4 +155,34 @@ export class ProductService {
       });
     });
   }
+    // Add this method
+  getCategories(): Observable<string[]> {
+    const user = this.auth.currentUser;
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
+
+    const categoriesCollection = collection(this.firestore, 'categories'); 
+    return collectionData(categoriesCollection, { idField: 'id' }).pipe(
+      map((cats: any[]) => cats.map(c => c.name))
+    );
+  }
+
+  // NEW: Add category to Firestore
+async addCategory(name: string): Promise<void> {
+  const user = this.auth.currentUser;
+  if (!user) throw new Error('User not authenticated');
+
+  const categoriesCollection = collection(this.firestore, 'categories');
+  const categoryDoc = doc(categoriesCollection); // auto-ID
+
+  return setDoc(categoryDoc, { 
+    name: name.toLowerCase(),
+    userId: user.uid  // needed for per-user rules
+  });
 }
+}
+
+  
+
+
