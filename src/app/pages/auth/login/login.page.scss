@@ -1,5 +1,16 @@
+// Color Variables based on the new scheme
+$primary-dark-blue: #1e4a63;       // Dark Blue/Teal for headers, main buttons
+$accent-green: #22c55e;            // Bright Green for success/confirm
+$accent-red: #dc2626;              // Warm Red for cancel/error
+$accent-orange: #f59e0b;           // Bright Orange for hold/pending
+$neutral-off-white: #f8fafc;       // Off-White for backgrounds
+$neutral-light-gray: #e2e8f0;      // Light Gray for input backgrounds
+$neutral-medium-gray: #64748b;     // Medium Gray for borders, secondary text
+$neutral-dark-gray: #1e293b;       // Very Dark Gray for primary text
+$neutral-white: #ffffff;           // Pure White for cards
+
 ion-content {
-  --background: #f8fafc;
+  --background: #{$neutral-off-white};
 }
 
 .auth-container {
@@ -23,18 +34,18 @@ ion-content {
     font-size: 1.7rem;
     font-weight: 600;
     margin-bottom: 6px;
-    color: #1f2937;
+    color: $primary-dark-blue; // Changed to dark blue/teal
   }
 
   span {
-    color: #6b7280;
+    color: $neutral-medium-gray; // Changed to medium gray
     font-size: 0.95rem;
   }
 }
 
 .auth-card {
   border-radius: 18px;
-  background: #ffffff;
+  background: $neutral-white; // Changed to pure white
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
 
@@ -42,7 +53,7 @@ ion-content {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #f1f5f9;
+  background: $neutral-light-gray; // Changed to light gray
   border-radius: 12px;
   padding: 14px;
   margin-top: 16px;
@@ -50,18 +61,18 @@ ion-content {
   transition: border 0.25s ease;
 
   i {
-    color: #6b7280;
+    color: $neutral-medium-gray; // Changed to medium gray
     font-size: 1rem;
   }
 
   &.invalid {
-    border-color: #dc2626;
-    background: #fef2f2;
+    border-color: $accent-red; // Changed to warm red
+    background: lighten($accent-red, 42%);
   }
 
   &:focus-within {
-    border-color: #2563eb;
-    background: #ffffff;
+    border-color: $primary-dark-blue; // Changed to dark blue/teal
+    background: $neutral-white;
   }
 }
 
@@ -70,6 +81,7 @@ ion-content {
   font-size: 1rem;
   --padding-start: 0;
   --padding-end: 0;
+  color: $neutral-dark-gray; // Added dark gray for text
 }
 
 .toggle-pass {
@@ -77,10 +89,10 @@ ion-content {
   border: none;
   font-size: 1.05rem;
   cursor: pointer;
-  color: #6b7280;
+  color: $neutral-medium-gray; // Changed to medium gray
 
   &:hover {
-    color: #2563eb;
+    color: $primary-dark-blue; // Changed to dark blue/teal
   }
 }
 
@@ -88,6 +100,7 @@ ion-content {
   margin-top: 4px;
   padding-left: 6px;
   font-size: 0.82rem;
+  color: $accent-red; // Changed to warm red
 }
 
 .forgot {
@@ -97,7 +110,7 @@ ion-content {
   button {
     background: none;
     border: none;
-    color: #2563eb;
+    color: $primary-dark-blue; // Changed to dark blue/teal
     font-size: 0.88rem;
     cursor: pointer;
   }
@@ -109,9 +122,16 @@ ion-content {
   padding: 16px;
   font-weight: 600;
   font-size: 1.05rem;
+  background: $primary-dark-blue; // Changed to dark blue/teal
+  color: white;
 
   &:disabled {
     filter: contrast(0.5);
+  }
+
+  // Success state for confirm/accept actions
+  &.success {
+    background: $accent-green;
   }
 }
 
@@ -120,7 +140,7 @@ ion-content {
   margin-top: 26px;
 
   span {
-    color: #6b7280;
+    color: $neutral-medium-gray; // Changed to medium gray
     font-size: 0.92rem;
   }
 }
@@ -128,6 +148,39 @@ ion-content {
 .btn-link {
   font-size: 0.95rem;
   margin-top: 6px;
+  color: $primary-dark-blue; // Changed to dark blue/teal
+}
+
+// Additional utility classes for the new color scheme
+.btn-success {
+  background: $accent-green;
+  color: white;
+}
+
+.btn-danger {
+  background: $accent-red;
+  color: white;
+}
+
+.btn-warning {
+  background: $accent-orange;
+  color: white;
+}
+
+.text-success {
+  color: $accent-green;
+}
+
+.text-danger {
+  color: $accent-red;
+}
+
+.text-warning {
+  color: $accent-orange;
+}
+
+.text-muted {
+  color: $neutral-medium-gray;
 }
 
 /* 📱 Mobile responsiveness */

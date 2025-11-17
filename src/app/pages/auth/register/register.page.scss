@@ -1,5 +1,16 @@
+// Using the defined color variables from previous palette
+$primary-dark-blue: #1e4a63;
+$accent-green: #22c55e;
+$accent-red: #dc2626;
+$accent-orange: #f59e0b;
+$neutral-off-white: #f8fafc;
+$neutral-light-gray: #e2e8f0;
+$neutral-medium-gray: #64748b;
+$neutral-dark-gray: #1e293b;
+$neutral-white: #ffffff;
+
 ion-content {
-  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --background: #{$neutral-off-white}; // Changed to solid off-white background
 }
 
 .register-container {
@@ -17,33 +28,35 @@ ion-content {
     height: 80px;
     margin: 0 auto 20px;
     border-radius: 20px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba($primary-dark-blue, 0.1); // Changed to primary blue
     padding: 15px;
+    color: $primary-dark-blue; // Added color for icon
   }
   
   h1 {
-    color: white;
+    color: $primary-dark-blue; // Changed to dark blue/teal
     font-weight: 700;
     font-size: 1.8em;
     margin-bottom: 10px;
   }
   
   p {
-    color: rgba(255, 255, 255, 0.8);
+    color: $neutral-medium-gray; // Changed to medium gray
     font-size: 1em;
     margin: 0;
   }
 }
 
 .form-container {
-  background: white;
+  background: $neutral-white; // Changed to pure white
   border-radius: 20px;
   padding: 25px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); // Softer shadow
+  border: 1px solid $neutral-light-gray; // Added subtle border
 }
 
 .form-item {
-  --background: #f8f9fa;
+  --background: #{$neutral-light-gray}; // Changed to light gray
   --border-radius: 12px;
   --padding-start: 16px;
   --padding-end: 16px;
@@ -53,24 +66,24 @@ ion-content {
   transition: all 0.3s ease;
   
   &.invalid {
-    --background: #fff5f5;
-    border-color: var(--ion-color-danger);
+    --background: lighten($accent-red, 42%); // Light red background
+    border-color: $accent-red; // Warm red for errors
   }
   
   &:focus-within {
-    --background: #ffffff;
-    border-color: var(--ion-color-primary);
-    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.1);
+    --background: #{$neutral-white};
+    border-color: $primary-dark-blue; // Changed to primary blue
+    box-shadow: 0 0 0 2px rgba($primary-dark-blue, 0.1);
   }
 }
 
 .input-label {
   font-weight: 600;
-  color: #2c3e50;
+  color: $neutral-dark-gray; // Changed to dark gray
   margin-bottom: 8px;
   
   .required {
-    color: var(--ion-color-danger);
+    color: $accent-red; // Changed to warm red
   }
 }
 
@@ -78,10 +91,11 @@ ion-content {
   --padding-top: 16px;
   --padding-bottom: 16px;
   font-size: 1em;
+  color: $neutral-dark-gray; // Added text color
 }
 
 .input-icon {
-  color: var(--ion-color-medium);
+  color: $neutral-medium-gray; // Changed to medium gray
   margin-right: 12px;
   font-size: 1.2em;
 }
@@ -89,10 +103,10 @@ ion-content {
 .visibility-toggle {
   --padding-start: 8px;
   --padding-end: 8px;
-  --color: var(--ion-color-medium);
+  --color: #{$neutral-medium-gray}; // Changed to medium gray
   
   &:hover {
-    --color: var(--ion-color-primary);
+    --color: #{$primary-dark-blue}; // Changed to primary blue
   }
 }
 
@@ -102,6 +116,7 @@ ion-content {
   
   ion-text {
     font-weight: 500;
+    color: $accent-red; // Changed to warm red
   }
 }
 
@@ -109,13 +124,20 @@ ion-content {
   --border-radius: 12px;
   --padding-top: 20px;
   --padding-bottom: 20px;
+  --background: #{$primary-dark-blue}; // Primary blue
+  --color: #ffffff;
   font-weight: 600;
   font-size: 1.1em;
   margin-top: 20px;
   
   &:disabled {
-    --background: var(--ion-color-medium);
-    --color: var(--ion-color-medium-contrast);
+    --background: #{$neutral-medium-gray};
+    --color: #{$neutral-white};
+  }
+  
+  // Success state variant
+  &.success {
+    --background: #{$accent-green};
   }
 }
 
@@ -123,22 +145,47 @@ ion-content {
   text-align: center;
   margin-top: 25px;
   padding-top: 20px;
-  border-top: 1px solid var(--ion-color-light);
+  border-top: 1px solid $neutral-light-gray; // Changed to light gray
   
   p {
-    color: var(--ion-color-medium);
+    color: $neutral-medium-gray; // Changed to medium gray
     margin-bottom: 15px;
     font-size: 0.95em;
   }
 }
 
 .login-button {
-  --color: var(--ion-color-primary);
+  --color: #{$primary-dark-blue}; // Changed to primary blue
   font-weight: 600;
   
   ion-icon {
     font-size: 1.1em;
   }
+}
+
+// Additional utility classes for the new palette
+.status-pending {
+  color: $accent-orange;
+  background: lighten($accent-orange, 35%);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.status-success {
+  color: $accent-green;
+  background: lighten($accent-green, 45%);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.status-error {
+  color: $accent-red;
+  background: lighten($accent-red, 42%);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 500;
 }
 
 // Animation for form items
@@ -187,4 +234,10 @@ ion-content {
 .loading-content {
   opacity: 0.7;
   pointer-events: none;
+}
+
+// Focus states for accessibility
+*:focus-visible {
+  outline: 2px solid $primary-dark-blue;
+  outline-offset: 2px;
 }
