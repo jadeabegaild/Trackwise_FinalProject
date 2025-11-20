@@ -29,6 +29,7 @@
     "@capacitor/keyboard": "7.0.3",
     "@capacitor/status-bar": "7.0.3",
     "@ionic/angular": "^8.0.0",
+    "@zxing/browser": "^0.1.5",
     "angularx-qrcode": "^20.0.0",
     "chart.js": "^4.5.1",
     "firebase": "^12.5.0",

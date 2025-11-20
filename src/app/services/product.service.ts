@@ -25,6 +25,7 @@ export interface Product {
   category: string;
   barcode: string;
   image: string;
+  netWeight: '' 
   userId: string; // ← ADD THIS FIELD
   createdAt?: Date;
   updatedAt?: Date;

@@ -197,7 +197,7 @@
             </ion-label>
             
             <div class="item-total">
-              <div class="total-amount">₱{{(item.price * item.quantity) | number:'1.2-2'}}</div>
+              <div class="total-amount">₱{{(item.price * item.cartQuantity) | number:'1.2-2'}}</div>
               <ion-button (click)="removeFromCart(i)" class="remove-btn" fill="clear" size="small">
                 <i class="fas fa-times"></i>
               </ion-button>

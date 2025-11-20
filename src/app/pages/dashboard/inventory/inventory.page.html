@@ -9,12 +9,12 @@
     </ion-title>
     
  <ion-buttons slot="end">
-  <ion-button (click)="openAddCategoryModal()" class="add-category-btn" fill="outline">
+  <ion-button (click)="openAddCategoryModal()" class="add-category-btn" >
     <i class="fas fa-layer-group"></i>
     Add Category
   </ion-button>
 
-  <ion-button (click)="openAddProductModal()" class="add-product-btn" fill="outline">
+  <ion-button (click)="openAddProductModal()" class="add-product-btn">
     <i class="fas fa-plus"></i>
     Add Product
   </ion-button>
@@ -236,7 +236,23 @@
 
 </ion-item>
 
-
+  <!-- Net Weight -->
+<ion-item class="form-item">
+  <ion-label position="stacked" class="form-label">
+    <i class="fas fa-weight"></i>
+    Net Weight
+  </ion-label>
+  <ion-input
+    formControlName="netWeight"
+    type="text"
+    placeholder="e.g. 250g, 500 ml, 1 kg"
+    class="form-input">
+  </ion-input>
+  <div class="error-message" *ngIf="productForm.get('netWeight')?.invalid && productForm.get('netWeight')?.touched">
+    <i class="fas fa-exclamation-circle"></i>
+    Invalid net weight
+  </div>
+</ion-item>
             <!-- Price and Quantity Row -->
             <div class="form-row">
               <ion-item class="form-item half-width">
@@ -278,31 +294,40 @@
             </div>
 
             <!-- Barcode -->
-            <ion-item class="form-item">
-              <ion-label position="stacked" class="form-label">
-                <i class="fas fa-barcode"></i>
-                Barcode Number
-              </ion-label>
-              <ion-input 
-                formControlName="barcode" 
-                type="text" 
-                placeholder="Enter barcode or scan"
-                class="form-input">
-              </ion-input>
-              <ion-button 
-                slot="end" 
-                fill="clear" 
-                (click)="scanBarcode()"
-                [disabled]="!isBarcodeScannerAvailable"
-                class="scan-btn">
-                <i class="fas fa-camera"></i>
-                Scan
-              </ion-button>
-            </ion-item>
-            <div class="info-message" *ngIf="!isBarcodeScannerAvailable">
-              <i class="fas fa-info-circle"></i>
-              Barcode scanner not available in browser
-            </div>
+           <!-- Barcode -->
+<ion-item class="form-item">
+  <ion-label position="stacked" class="form-label">
+    <i class="fas fa-barcode"></i>
+    Barcode Number *
+  </ion-label>
+
+  <ion-input 
+    formControlName="barcode"
+    type="text"
+    placeholder="Scan barcode"
+    readonly
+    class="form-input">
+  </ion-input>
+
+  <ion-button 
+    slot="end"
+    fill="clear"
+    class="scan-btn"
+    (click)="startBarcodeScan()">
+    <i class="fas fa-camera"></i>
+    Scan
+  </ion-button>
+</ion-item>
+
+<!-- Scanner Video Preview -->
+<div *ngIf="scanning" class="scanner-container">
+  <video #scannerPreview width="100%" height="240"></video>
+
+  <ion-button expand="block" color="danger" (click)="stopBarcodeScan()">
+    Stop Scan
+  </ion-button>
+</div>
+
           </ion-list>
         </div>
       </form>

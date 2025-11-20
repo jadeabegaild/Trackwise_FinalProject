@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { ProductService, Product } from '../../../services/product.service';
+import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -11,21 +12,32 @@ import { Subscription } from 'rxjs';
   standalone: false,
 })
 export class InventoryPage implements OnInit, OnDestroy {
+  @ViewChild('scannerPreview', { static: false }) scannerPreview!: ElementRef<HTMLVideoElement>;
+
+  // Product data
   products: Product[] = [];
   filteredProducts: Product[] = [];
   searchTerm: string = '';
   selectedCategory: string = 'all';
-  isModalOpen: boolean = false;
-  isEditing: boolean = false;
-  editingProductId: string | null = null;
+
+  // Forms
   productForm: FormGroup;
-  isBarcodeScannerAvailable: boolean = false;
-  isCategoryModalOpen: boolean = false;
   categoryForm: FormGroup;
+
+  // Modals
+  isModalOpen = false;
+  isCategoryModalOpen = false;
+  isEditing = false;
+  editingProductId: string | null = null;
+
+  // Categories
   categories: string[] = [];
 
+  // Barcode scanner
+  scanner = new BrowserMultiFormatReader();
+  scanControls: IScannerControls | null = null;
+  scanning = false;
 
-  
   private productsSubscription: Subscription | undefined;
 
   constructor(
@@ -39,17 +51,19 @@ export class InventoryPage implements OnInit, OnDestroy {
       price: [0, [Validators.required, Validators.min(0)]],
       quantity: [0, [Validators.required, Validators.min(0)]],
       category: ['', Validators.required],
-      barcode: [''],
-      image: ['']
+      barcode: ['', Validators.required],
+      image: [''],
+      netWeight: [''] 
     });
 
-    this.isBarcodeScannerAvailable = !!(window as any).cordova || !!(window as any).Capacitor;
     this.categoryForm = this.formBuilder.group({
       name: ['', Validators.required]
     });
-
   }
 
+  // ================================
+  // 🔹 INITIALIZATION
+  // ================================
   async ngOnInit() {
     const loading = await this.loadingController.create({
       message: 'Loading products...'
@@ -59,54 +73,44 @@ export class InventoryPage implements OnInit, OnDestroy {
     this.productsSubscription = this.productService.getProducts().subscribe(
       (products) => {
         this.products = products;
-        this.filteredProducts = [...this.products];
+        this.filteredProducts = [...products];
         loading.dismiss();
       },
-      async (error) => {
-        console.error('Error loading products:', error);
-        await loading.dismiss();
+      async () => {
+        loading.dismiss();
         this.presentErrorAlert('Failed to load products');
       }
     );
-    this.loadCategories(); // <-- add this
+
+    this.loadCategories();
   }
 
   ngOnDestroy() {
-    if (this.productsSubscription) {
-      this.productsSubscription.unsubscribe();
-    }
-  }
-  loadCategories() {
-  this.productService.getCategories().subscribe((cats: string[]) => {
-    this.categories = cats;
-  });
-}
-
-  // ADD THIS METHOD - Get current user ID
-  private getCurrentUserId(): string {
-    // Replace this with your actual user ID retrieval logic
-    // Examples:
-    
-    // If using Firebase Auth:
-    // return this.auth.currentUser?.uid || 'default-user-id';
-    
-    // If using a service:
-    // return this.authService.getCurrentUserId();
-    
-    // For now, using a placeholder - update this with your actual implementation
-    return 'default-user-id';
+    this.stopBarcodeScan();
+    if (this.productsSubscription) this.productsSubscription.unsubscribe();
   }
 
-  getStockStatus(quantity: number): { label: string, color: string } {
+  getStockStatus(quantity: number): { label: string, color: string } { 
     if (quantity === 0) {
-      return { label: 'Out of Stock', color: 'danger' };
-    } else if (quantity < 10) {
-      return { label: 'Low Stock', color: 'warning' };
-    } else {
-      return { label: 'In Stock', color: 'success' };
+      return { label: 'Out of Stock', color: 'danger' }; 
+    } else if (quantity < 10) { 
+      return { label: 'Low Stock', color: 'warning' }; 
+    } else { 
+      return { label: 'In Stock', color: 'success' }; 
     }
   }
+  // ================================
+  // 🔹 CATEGORY LOADING
+  // ================================
+  loadCategories() {
+    this.productService.getCategories().subscribe((cats: string[]) => {
+      this.categories = cats;
+    });
+  }
 
+  // ================================
+  // 🔹 FILTERING
+  // ================================
   searchProducts(event: any) {
     this.searchTerm = event.detail.value.toLowerCase();
     this.applyFilters();
@@ -119,16 +123,25 @@ export class InventoryPage implements OnInit, OnDestroy {
 
   applyFilters() {
     this.filteredProducts = this.products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(this.searchTerm) ||
-                           product.barcode.includes(this.searchTerm);
-      const matchesCategory = this.selectedCategory === 'all' || product.category === this.selectedCategory;
+      const matchesSearch =
+        product.name.toLowerCase().includes(this.searchTerm) ||
+        product.barcode.toLowerCase().includes(this.searchTerm);
+
+      const matchesCategory =
+        this.selectedCategory === 'all' ||
+        product.category === this.selectedCategory;
+
       return matchesSearch && matchesCategory;
     });
   }
 
+  // ================================
+  // 🔹 OPEN MODALS
+  // ================================
   openAddProductModal() {
     this.isEditing = false;
     this.editingProductId = null;
+
     this.productForm.reset({
       name: '',
       price: 0,
@@ -137,194 +150,203 @@ export class InventoryPage implements OnInit, OnDestroy {
       barcode: '',
       image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=150'
     });
+
     this.isModalOpen = true;
   }
 
   editProduct(product: Product) {
     this.isEditing = true;
     this.editingProductId = product.id || null;
-    this.productForm.patchValue({
-      name: product.name,
-      price: product.price,
-      quantity: product.quantity,
-      category: product.category,
-      barcode: product.barcode,
-      image: product.image
-    });
+
+    this.productForm.patchValue(product);
+
     this.isModalOpen = true;
+  }
+  
+
+  closeModal() {
+    this.stopBarcodeScan();
+    this.isModalOpen = false;
   }
 
   async deleteProduct(productId: string, productName?: string) {
-    const alert = await this.alertController.create({
-      header: 'Confirm Delete',
-      message: productName 
-        ? `Are you sure you want to delete "${productName}"? This action cannot be undone.`
-        : 'Are you sure you want to delete this product? This action cannot be undone.',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'secondary'
-        },
-        {
-          text: 'Delete',
-          role: 'destructive',
-          cssClass: 'danger-button',
-          handler: async () => {
-            await this.performDelete(productId);
-          }
+  const alert = await this.alertController.create({
+    header: 'Confirm Delete',
+    message: productName
+      ? `Are you sure you want to delete "${productName}"? This action cannot be undone.`
+      : 'Are you sure you want to delete this product? This action cannot be undone.',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+        cssClass: 'secondary'
+      },
+      {
+        text: 'Delete',
+        role: 'destructive',
+        cssClass: 'danger-button',
+        handler: async () => {
+          await this.performDelete(productId);
         }
-      ]
+      }
+    ]
+  });
+
+  await alert.present();
+}
+
+private async performDelete(productId: string) {
+  const loading = await this.loadingController.create({
+    message: 'Deleting product...',
+    spinner: 'crescent',
+    cssClass: 'delete-loading'
+  });
+
+  await loading.present();
+
+  try {
+    await this.productService.deleteProduct(productId);
+
+    await loading.dismiss();
+
+    const successAlert = await this.alertController.create({
+      header: 'Success',
+      message: 'Product deleted successfully',
+      buttons: ['OK'],
+      cssClass: 'alert-success'
     });
 
-    await alert.present();
+    await successAlert.present();
+
+  } catch (error) {
+    console.error('Error deleting product:', error);
+
+    await loading.dismiss();
+
+    const errorAlert = await this.alertController.create({
+      header: 'Delete Failed',
+      message: 'Failed to delete product. Please try again.',
+      buttons: ['OK'],
+      cssClass: 'alert-error'
+    });
+
+    await errorAlert.present();
   }
+}
 
-  private async performDelete(productId: string) {
+onImageSelected(event: any) {
+  const file = event.target.files[0];
+
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = (e: any) => {
+      this.productForm.patchValue({
+        image: e.target.result
+      });
+    };
+
+    reader.readAsDataURL(file);
+  }
+}
+
+  // ================================
+  // 🔹 SAVE PRODUCT
+  // ================================
+  async saveProduct() {
+    if (!this.productForm.valid) return;
+
     const loading = await this.loadingController.create({
-      message: 'Deleting product...',
-      spinner: 'crescent',
-      cssClass: 'delete-loading'
+      message: this.isEditing ? 'Updating product...' : 'Adding product...'
     });
-    
     await loading.present();
 
     try {
-      await this.productService.deleteProduct(productId);
-      await loading.dismiss();
-      
-      const successAlert = await this.alertController.create({
-        header: 'Success',
-        message: 'Product deleted successfully',
-        buttons: ['OK'],
-        cssClass: 'alert-success'
-      });
-      await successAlert.present();
-      
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      await loading.dismiss();
-      
-      const errorAlert = await this.alertController.create({
-        header: 'Delete Failed',
-        message: 'Failed to delete product. Please try again.',
-        buttons: ['OK'],
-        cssClass: 'alert-error'
-      });
-      await errorAlert.present();
-    }
-  }
+      const formValue = this.productForm.value;
 
-  closeModal() {
-    this.isModalOpen = false;
-    this.productForm.reset();
-  }
-
-  async saveProduct() {
-    if (this.productForm.valid) {
-      const loading = await this.loadingController.create({
-        message: this.isEditing ? 'Updating product...' : 'Adding product...'
-      });
-      await loading.present();
-
-      try {
-        const formValue = this.productForm.value;
-
-        if (this.isEditing && this.editingProductId) {
-          await this.productService.updateProduct(this.editingProductId, formValue);
-        } else {
-          const newProduct: Product = {
-            name: formValue.name,
-            price: formValue.price,
-            quantity: formValue.quantity,
-            category: formValue.category,
-            barcode: formValue.barcode || this.generateBarcode(),
-            image: formValue.image,
-            userId: this.getCurrentUserId() // Now this will work
-          };
-          await this.productService.addProduct(newProduct);
-        }
-
-        await loading.dismiss();
-        this.closeModal();
-      } catch (error) {
-        console.error('Error saving product:', error);
-        await loading.dismiss();
-        this.presentErrorAlert('Failed to save product');
+      if (this.isEditing && this.editingProductId) {
+        await this.productService.updateProduct(this.editingProductId, formValue);
+      } else {
+        await this.productService.addProduct(formValue);
       }
+
+      loading.dismiss();
+      this.closeModal();
+    } catch (error) {
+      loading.dismiss();
+      this.presentErrorAlert('Failed to save product');
     }
   }
 
-  onImageSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.productForm.patchValue({
-          image: e.target.result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
+  
+  // ================================
+  // 🔹 BARCODE SCANNING
+  // ================================
+  async startBarcodeScan() {
+    this.scanning = true;
+
+    const video = this.scannerPreview.nativeElement;
+
+    this.scanControls = await this.scanner.decodeFromVideoDevice(
+      undefined,
+      video,
+      (result, err) => {
+        if (result) {
+          this.productForm.patchValue({ barcode: result.getText() });
+          this.stopBarcodeScan();
+        }
+      }
+    );
   }
 
-  scanBarcode() {
-    if (this.isBarcodeScannerAvailable) {
-      const simulatedBarcode = '8' + Math.random().toString().substr(2, 11);
-      this.productForm.patchValue({
-        barcode: simulatedBarcode
-      });
-    } else {
-      const randomBarcode = this.generateBarcode();
-      this.productForm.patchValue({
-        barcode: randomBarcode
-      });
+  stopBarcodeScan() {
+    if (this.scanControls) {
+      this.scanControls.stop();
+      this.scanControls = null;
     }
+    this.scanning = false;
   }
 
-
-
+  // ================================
+  // 🔹 CATEGORY SAVE
+  // ================================
   openAddCategoryModal() {
     this.categoryForm.reset();
     this.isCategoryModalOpen = true;
   }
 
   closeCategoryModal() {
-  this.isCategoryModalOpen = false;
+    this.isCategoryModalOpen = false;
   }
 
-async saveCategory() {
-  if (this.categoryForm.valid) {
-    const newCategory = this.categoryForm.value.name.toLowerCase();
+  async saveCategory() {
+    if (!this.categoryForm.valid) return;
 
-    if (!this.categories.includes(newCategory)) {
-      try {
-        await this.productService.addCategory(newCategory); // save to Firestore
-        this.categories.push(newCategory); // update local array
-        this.closeCategoryModal();
-      } catch (error) {
-        console.error('Error saving category:', error);
-        this.presentErrorAlert('Failed to save category');
-      }
-    } else {
+    const cat = this.categoryForm.value.name.toLowerCase();
+
+    if (this.categories.includes(cat)) {
       this.presentErrorAlert('Category already exists');
+      return;
+    }
+
+    try {
+      await this.productService.addCategory(cat);
+      this.categories.push(cat);
+      this.closeCategoryModal();
+    } catch {
+      this.presentErrorAlert('Failed to save category');
     }
   }
-}
 
-
-
-  private generateBarcode(): string {
-    return Math.random().toString().substr(2, 12);
-  }
-
-  private async presentErrorAlert(message: string) {
+  // ================================
+  // 🔹 ERROR ALERT
+  // ================================
+  async presentErrorAlert(msg: string) {
     const alert = await this.alertController.create({
       header: 'Error',
-      message: message,
-      buttons: ['OK']
+      message: msg,
+      buttons: ['OK'],
     });
-    await alert.present();
+    alert.present();
   }
 }
-
