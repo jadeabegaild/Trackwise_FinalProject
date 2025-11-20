@@ -8,12 +8,16 @@ import { CustomersPageRoutingModule } from './customers-routing.module';
 
 import { CustomerPage } from './customers.page';
 
+import { ReactiveFormsModule } from '@angular/forms';
+
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    CustomersPageRoutingModule
+    CustomersPageRoutingModule,
+    ReactiveFormsModule,
   ],
   declarations: [CustomerPage]
 })

@@ -28,6 +28,7 @@
     "@capacitor/haptics": "7.0.2",
     "@capacitor/keyboard": "7.0.3",
     "@capacitor/status-bar": "7.0.3",
+    "@fortawesome/fontawesome-free": "^7.1.0",
     "@ionic/angular": "^8.0.0",
     "@zxing/browser": "^0.1.5",
     "angularx-qrcode": "^20.0.0",

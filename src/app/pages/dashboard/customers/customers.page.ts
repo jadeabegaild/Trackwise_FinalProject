@@ -1,8 +1,10 @@
-import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, AbstractControl } from '@angular/forms';
 import { Timestamp } from '@angular/fire/firestore';
 import { ReportsService, Order, OrderItem } from '../../../services/reports';
 import { ProductService, Product } from '../../../services/product.service';
 import { AuthService, UserData } from 'src/app/services/auth'; 
+import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential, sendEmailVerification } from '@angular/fire/auth';
 
 interface SalesData {
   totalSales: number;
@@ -24,6 +26,17 @@ interface TopProduct {
   total: number;
 }
 
+// Extend the UserData interface to include preferences
+interface ExtendedUserData extends UserData {
+  preferences?: {
+    language?: string;
+    theme?: string;
+    notificationsEnabled?: boolean;
+    emailNotifications?: boolean;
+  };
+  bio?: string;
+}
+
 @Component({
   selector: 'app-customers',
   templateUrl: './customers.page.html',
@@ -33,7 +46,8 @@ interface TopProduct {
 export class CustomerPage implements OnInit {
   private reportsService = inject(ReportsService);
   private productService = inject(ProductService);
-  private authService = inject(AuthService); 
+  private authService = inject(AuthService);
+  private fb = inject(FormBuilder);
   
   @ViewChild('salesChartCanvas') salesChartCanvas!: ElementRef;
   
@@ -60,9 +74,9 @@ export class CustomerPage implements OnInit {
   allProducts: Product[] = [];
   
   Math = Math;
-  isSidebarOpen: boolean = false;
+  isSidebarOpen: boolean = false; // Kept but unused
   isProfileModalOpen: boolean = false;
-  currentPage: string = 'dashboard';
+  currentPage: string = 'customers'; // Defaulted to 'customers'
   contentId: string = 'main-content';
   user: any = {
     name: '',
@@ -73,28 +87,95 @@ export class CustomerPage implements OnInit {
     bio: '',
     notificationsEnabled: true
   };
-  userData: UserData | null = null;
+  userData: ExtendedUserData | null = null;
+
+  // New profile management properties
+  showProfileDropdown: boolean = false;
+  activeProfileSection: string = 'edit';
+  isUpdatingProfile: boolean = false;
+  isChangingPassword: boolean = false;
+  isSavingPreferences: boolean = false;
+  uploadProgress: number = 0;
+  isEmailVerified: boolean = true;
+
+  // Form groups
+  profileForm!: FormGroup;
+  passwordForm!: FormGroup;
+  preferencesForm!: FormGroup;
 
   ngOnInit() {
     this.loadCustomerData();
-    this.loadUserData(); 
+    this.loadUserData();
+    this.initializeForms();
+  }
+
+  private initializeForms(): void {
+    // Profile Form
+    this.profileForm = this.fb.group({
+      businessName: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.pattern(/^09\d{9}$/)]],
+      bio: [''],
+      avatar: ['']
+    });
+
+    // Password Form
+    this.passwordForm = this.fb.group({
+      currentPassword: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]]
+    }, { validators: this.passwordMatchValidator });
+
+    // Preferences Form
+    this.preferencesForm = this.fb.group({
+      language: ['en'],
+      theme: ['light'],
+      notificationsEnabled: [true],
+      emailNotifications: [true]
+    });
+  }
+
+  private passwordMatchValidator(control: AbstractControl) {
+    const newPassword = control.get('newPassword');
+    const confirmPassword = control.get('confirmPassword');
+    
+    if (!newPassword || !confirmPassword) return null;
+    
+    return newPassword.value === confirmPassword.value ? null : { passwordMismatch: true };
   }
 
   private loadUserData(): void {
     this.authService.user$.subscribe({
       next: async (user) => {
         if (user) {
-          this.userData = await this.authService.getUserData(user.uid);
+          const userData = await this.authService.getUserData(user.uid);
+          this.userData = userData as ExtendedUserData;
+          this.isEmailVerified = user.emailVerified;
           
+          // Update user object
           this.user = {
             name: user.displayName || this.userData?.businessName || 'User Name',
             email: user.email || '',
             avatar: user.photoURL || 'assets/images/user-avatar.png',
             role: this.userData?.role || 'user',
             phone: this.userData?.phone || '',
-            bio: '', 
+            bio: this.userData?.bio || '',
             notificationsEnabled: true
           };
+
+          // Update forms with user data
+          this.profileForm.patchValue({
+            businessName: this.userData?.businessName || '',
+            email: user.email || '',
+            phone: this.userData?.phone || '',
+            bio: this.userData?.bio || '',
+            avatar: user.photoURL || 'assets/images/user-avatar.png'
+          });
+
+          // Load preferences if available
+          if (this.userData?.preferences) {
+            this.preferencesForm.patchValue(this.userData.preferences);
+          }
         } else {
           this.user = {
             name: '',
@@ -114,106 +195,284 @@ export class CustomerPage implements OnInit {
     });
   }
 
-  toggleSidebar(): void {
-    this.isSidebarOpen = !this.isSidebarOpen;
+  // Profile Dropdown Methods
+  toggleProfileDropdown(event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.showProfileDropdown = !this.showProfileDropdown;
   }
 
-  openProfile(): void {
+  @HostListener('document:click')
+  closeProfileDropdown(): void {
+    this.showProfileDropdown = false;
+  }
+
+  // Focus management for modal
+  private focusTrapModal(event: KeyboardEvent): void {
+    if (!this.isProfileModalOpen) return;
+
+    const modal = document.querySelector('ion-modal');
+    if (!modal) return;
+
+    // Get all focusable elements in the modal
+    const focusableElements = modal.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+
+    if (focusableElements.length === 0) return;
+
+    const firstElement = focusableElements[0] as HTMLElement;
+    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    // Trap focus within modal
+    if (event.key === 'Tab') {
+      if (event.shiftKey) {
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement.focus();
+        }
+      }
+    }
+
+    // Close modal on Escape key
+    if (event.key === 'Escape') {
+      this.closeProfileModal();
+    }
+  }
+
+  // Initialize focus when modal opens
+  private initializeModalFocus(): void {
+    setTimeout(() => {
+      const modal = document.querySelector('ion-modal');
+      if (modal) {
+        // Focus on the first focusable element
+        const firstInput = modal.querySelector('input, button, [tabindex]:not([tabindex="-1"])');
+        if (firstInput) {
+          (firstInput as HTMLElement).focus();
+        }
+        
+        // Add global keydown listener for focus trapping
+        document.addEventListener('keydown', this.focusTrapModal.bind(this));
+      }
+    }, 150);
+  }
+
+  // Clean up when modal closes
+  private cleanupModalFocus(): void {
+    document.removeEventListener('keydown', this.focusTrapModal.bind(this));
+    
+    // Restore focus to the profile button that opened the modal
+    const profileButton = document.querySelector('.user-button');
+    if (profileButton) {
+      (profileButton as HTMLElement).focus();
+    }
+  }
+
+  // Profile Modal Methods
+  openProfileModal(section: string): void {
+    this.activeProfileSection = section;
     this.isProfileModalOpen = true;
-    this.isSidebarOpen = false;
+    this.showProfileDropdown = false;
+    // this.isSidebarOpen = false; // Sidebar logic removed
+    this.initializeModalFocus();
   }
 
-  closeProfile(): void {
+  closeProfileModal(): void {
     this.isProfileModalOpen = false;
+    this.cleanupModalFocus();
+    this.resetForms();
   }
 
-  async saveProfile(): Promise<void> {
+  getProfileModalTitle(): string {
+    switch (this.activeProfileSection) {
+      case 'edit': return 'Edit Profile';
+      case 'password': return 'Change Password';
+      case 'preferences': return 'Preferences';
+      default: return 'Profile Management';
+    }
+  }
+
+  // Profile Management Methods
+  async updateProfile(): Promise<void> {
+    if (this.profileForm.invalid) return;
+
+    this.isUpdatingProfile = true;
     const user = this.authService.getCurrentUser();
     if (!user) return;
 
     try {
+      const formData = this.profileForm.value;
+
+      // Update Firebase Auth profile
       await updateProfile(user, {
-        displayName: this.user.name,
-        photoURL: this.user.avatar
+        displayName: formData.businessName,
+        photoURL: formData.avatar
       });
 
+      // Update Firestore user data
       if (this.userData) {
         await this.authService.updateUserData(user.uid, {
-          businessName: this.user.name,
-          phone: this.user.phone,
-          displayName: this.user.name
-        });
+          businessName: formData.businessName,
+          phone: formData.phone,
+          bio: formData.bio,
+          displayName: formData.businessName,
+          updatedAt: new Date()
+        } as Partial<UserData>);
       }
 
       console.log('Profile updated successfully');
-      this.closeProfile();
-      
-      this.loadUserData();
+      this.isUpdatingProfile = false;
+      this.closeProfileModal();
+      this.loadUserData(); // Refresh user data
       
     } catch (error) {
       console.error('Error updating profile:', error);
+      this.isUpdatingProfile = false;
     }
-  }
-
-  navigateTo(page: string): void {
-    this.currentPage = page;
-    this.isSidebarOpen = false;
-    
-    switch (page) {
-      case 'dashboard':
-        break;
-      case 'products':
-        break;
-      case 'orders':
-        break;
-      case 'customers':
-        break;
-      case 'inventory':
-        break;
-      case 'reports':
-        break;
-    }
-  }
-
-  editProfile(): void {
-    this.openProfile();
   }
 
   async changePassword(): Promise<void> {
-    const email = this.authService.getUserEmail();
-    if (email) {
-      try {
-        await this.authService.sendPasswordResetEmail(email);
-        console.log('Password reset email sent');
-      } catch (error) {
-        console.error('Error sending password reset email:', error);
+    if (this.passwordForm.invalid) return;
+
+    this.isChangingPassword = true;
+    const user = this.authService.getCurrentUser();
+    if (!user || !user.email) return;
+
+    try {
+      const formData = this.passwordForm.value;
+
+      // Reauthenticate user
+      const credential = EmailAuthProvider.credential(user.email, formData.currentPassword);
+      await reauthenticateWithCredential(user, credential);
+
+      // Update password
+      await updatePassword(user, formData.newPassword);
+
+      console.log('Password changed successfully');
+      this.isChangingPassword = false;
+      this.closeProfileModal();
+      
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      this.isChangingPassword = false;
+      
+      // Handle specific error cases
+      if (error.code === 'auth/wrong-password') {
+        console.error('Wrong current password');
+      } else if (error.code === 'auth/weak-password') {
+        console.error('Password is too weak');
       }
     }
   }
 
-  notificationSettings(): void {
-    this.user.notificationsEnabled = !this.user.notificationsEnabled;
-    console.log(`Notifications ${this.user.notificationsEnabled ? 'enabled' : 'disabled'}`);
-    
+  async savePreferences(): Promise<void> {
+    this.isSavingPreferences = true;
     const user = this.authService.getCurrentUser();
-    if (user && this.userData) {
-      this.authService.updateUserData(user.uid, {
-      } as Partial<UserData>);
+    if (!user) return;
+
+    try {
+      const preferences = this.preferencesForm.value;
+
+      if (this.userData) {
+        await this.authService.updateUserData(user.uid, {
+          preferences: preferences,
+          updatedAt: new Date()
+        } as Partial<ExtendedUserData>);
+      }
+
+      console.log('Preferences saved successfully');
+      this.isSavingPreferences = false;
+      this.closeProfileModal();
+      
+      // Apply theme preference
+      this.applyTheme(preferences.theme);
+      
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      this.isSavingPreferences = false;
     }
   }
 
-  privacySettings(): void {
-    console.log('Privacy settings clicked');
+  private applyTheme(theme: string): void {
+    // Implement theme switching logic here
+    document.body.classList.toggle('dark', theme === 'dark');
   }
 
-  preferences(): void {
-    console.log('Preferences clicked');
+  // File Upload Methods
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.uploadImage(file);
+    }
   }
 
-  helpSupport(): void {
-    console.log('Help & support clicked');
+  async uploadImage(file: File): Promise<void> {
+    // Simulate upload process - replace with actual Firebase Storage upload
+    this.uploadProgress = 0;
+    
+    const interval = setInterval(() => {
+      this.uploadProgress += 10;
+      if (this.uploadProgress >= 100) {
+        clearInterval(interval);
+        
+        // For demo purposes, create a blob URL
+        const imageUrl = URL.createObjectURL(file);
+        this.profileForm.patchValue({ avatar: imageUrl });
+        
+        // In real implementation, you would:
+        // 1. Upload to Firebase Storage
+        // 2. Get download URL
+        // 3. Update user profile with the URL
+      }
+    }, 200);
   }
 
+  // Email Verification
+  async verifyEmail(): Promise<void> {
+    const user = this.authService.getCurrentUser();
+    if (!user) return;
+
+    try {
+      await sendEmailVerification(user);
+      console.log('Verification email sent');
+      this.showProfileDropdown = false;
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+    }
+  }
+
+  // Reset forms when modal closes
+  private resetForms(): void {
+    this.profileForm.markAsPristine();
+    this.passwordForm.reset();
+    this.preferencesForm.markAsPristine();
+    this.uploadProgress = 0;
+  }
+
+  // Removed: toggleSidebar()
+  // Removed: openProfile()
+  // Removed: closeProfile()
+  // Removed: saveProfile()
+
+  // Removed: navigateTo(page: string)
+  
+  // These are now only callable via the dropdown, removing editProfile, changePasswordOld, notificationSettings, privacySettings, and preferences functions, as they are no longer accessible from the sidebar. 
+  // I will keep the implementations if they are used by the modal, but remove the redundant wrappers.
+  
+  // editProfile() is only used by the sidebar/old component flow, removing it.
+  // changePasswordOld() is an alternative, removing it.
+  // notificationSettings() is now only handled by the preferences form, removing it.
+  // privacySettings() is now only a console log, removing it.
+  // preferences() is now only handled by openProfileModal('preferences'), removing it.
+  
+  // Keeping the essential functions:
+  
   async logout(): Promise<void> {
     try {
       await this.authService.logout();
@@ -222,7 +481,8 @@ export class CustomerPage implements OnInit {
       console.error('Error logging out:', error);
     }
   }
-
+  
+  // The rest of the data loading and chart logic remains
   loadCustomerData() {
     this.isLoading = true;
     
@@ -621,5 +881,3 @@ export class CustomerPage implements OnInit {
     return createdAt;
   }
 }
-
-import { updateProfile } from '@angular/fire/auth';

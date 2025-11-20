@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import { ReportsService, Order, OrderItem } from '../../../services/reports';
-import { ProductService, Product } from '../../../services/product.service'; // Import ProductService
+import { ProductService, Product } from '../../../services/product.service';
 
 interface SalesData {
   date: string;
@@ -31,21 +31,20 @@ interface CSVRow {
 })
 export class ReportsPage implements OnInit {
   private reportsService = inject(ReportsService);
-  private productService = inject(ProductService); // Inject ProductService
+  private productService = inject(ProductService);
   
   @ViewChild('salesChartCanvas') salesChartCanvas!: ElementRef;
   
-  // Add all the missing properties
   isLoading: boolean = true;
   orders: Order[] = [];
-  products: Product[] = []; // Add products array
+  products: Product[] = [];
   topProducts: any[] = [];
   totalSales: number = 0;
   avgTransaction: number = 0;
   transactions: number = 0;
   itemsSold: number = 0;
+  currentDate: Date = new Date();
   
-  // New properties for analytics
   selectedPeriod: string = 'daily';
   salesData: SalesData[] = [];
   inventoryMovement: InventoryMovement[] = [];
@@ -58,21 +57,18 @@ export class ReportsPage implements OnInit {
   loadReports() {
     this.isLoading = true;
     
-    // Load both orders and products
     this.reportsService.getOrders().subscribe({
       next: (orders) => {
         this.orders = orders;
         this.calculateReportData(orders);
         this.generateSalesTrendData();
         
-        // Load products for inventory data
         this.productService.getProducts().subscribe({
           next: (products) => {
             this.products = products;
             this.generateInventoryMovement(orders, products);
             this.isLoading = false;
             
-            // Initialize chart after data is loaded
             setTimeout(() => {
               this.initializeChart();
             }, 100);
@@ -91,21 +87,13 @@ export class ReportsPage implements OnInit {
   }
 
   private calculateReportData(orders: Order[]) {
-    // Calculate total sales
     this.totalSales = orders.reduce((sum, order) => sum + order.total, 0);
-    
-    // Calculate transactions count
     this.transactions = orders.length;
-    
-    // Calculate average transaction
     this.avgTransaction = this.transactions > 0 ? this.totalSales / this.transactions : 0;
-    
-    // Calculate items sold
     this.itemsSold = orders.reduce((sum, order) => 
       sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0), 0
     );
     
-    // Calculate top products
     this.calculateTopProducts(orders);
   }
 
@@ -128,7 +116,6 @@ export class ReportsPage implements OnInit {
       });
     });
     
-    // Convert to array and sort by quantity sold
     this.topProducts = Array.from(productMap.entries())
       .map(([id, product]) => ({
         id,
@@ -137,17 +124,15 @@ export class ReportsPage implements OnInit {
         total: product.total
       }))
       .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 10); // Top 10 products
+      .slice(0, 10);
   }
 
-  // New methods for analytics
   private generateSalesTrendData() {
     const now = new Date();
     this.salesData = [];
     
     switch (this.selectedPeriod) {
       case 'daily':
-        // Last 7 days
         for (let i = 6; i >= 0; i--) {
           const date = new Date(now);
           date.setDate(now.getDate() - i);
@@ -158,7 +143,6 @@ export class ReportsPage implements OnInit {
         break;
         
       case 'weekly':
-        // Last 4 weeks
         for (let i = 3; i >= 0; i--) {
           const weekStart = new Date(now);
           weekStart.setDate(now.getDate() - (i * 7));
@@ -169,7 +153,6 @@ export class ReportsPage implements OnInit {
         break;
         
       case 'monthly':
-        // Last 6 months
         for (let i = 5; i >= 0; i--) {
           const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
           const monthLabel = month.toLocaleDateString('en-US', { month: 'short' });
@@ -214,7 +197,6 @@ export class ReportsPage implements OnInit {
   private generateInventoryMovement(orders: Order[], products: Product[]) {
     const movementData: InventoryMovement[] = [];
     
-    // Calculate sales per product
     const productSales = new Map<string, number>();
     
     orders.forEach((order: Order) => {
@@ -224,15 +206,12 @@ export class ReportsPage implements OnInit {
       });
     });
     
-    // Create inventory movement data
     products.forEach((product: Product) => {
       if (!product.id) return;
       
       const totalSold = productSales.get(product.id) || 0;
-      const currentStock = product.quantity; // Use actual quantity from product
-      
-      // Calculate stock change (negative means stock decreased)
-      const change = -totalSold; // Sales reduce stock
+      const currentStock = product.quantity;
+      const change = -totalSold;
       
       movementData.push({
         productName: product.name,
@@ -242,10 +221,9 @@ export class ReportsPage implements OnInit {
       });
     });
     
-    // Sort by most movement (absolute value of change)
     this.inventoryMovement = movementData
       .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
-      .slice(0, 10); // Show top 10 movements
+      .slice(0, 10);
   }
 
   private initializeChart() {
@@ -254,27 +232,22 @@ export class ReportsPage implements OnInit {
     const ctx = this.salesChartCanvas.nativeElement.getContext('2d');
     if (!ctx) return;
     
-    // Simple chart implementation using canvas
     const canvas = this.salesChartCanvas.nativeElement;
     const maxSales = Math.max(...this.salesData.map(d => d.amount));
-    const maxValue = maxSales > 0 ? maxSales : 1000; // Default max if no sales
+    const maxValue = maxSales > 0 ? maxSales : 1000;
     
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw chart
     const padding = 40;
     const chartWidth = canvas.width - (padding * 2);
     const chartHeight = canvas.height - (padding * 2);
     
-    // Draw bars
     const barWidth = chartWidth / this.salesData.length;
     this.salesData.forEach((data: SalesData, index: number) => {
       const barHeight = (data.amount / maxValue) * chartHeight;
       const x = padding + (index * barWidth);
       const y = canvas.height - padding - barHeight;
       
-      // Gradient fill
       const gradient = ctx.createLinearGradient(0, y, 0, canvas.height - padding);
       gradient.addColorStop(0, '#667eea');
       gradient.addColorStop(1, '#764ba2');
@@ -282,19 +255,16 @@ export class ReportsPage implements OnInit {
       ctx.fillStyle = gradient;
       ctx.fillRect(x + 5, y, barWidth - 10, barHeight);
       
-      // Draw label
       ctx.fillStyle = '#333';
       ctx.font = '12px Arial';
       ctx.textAlign = 'center';
       ctx.fillText(data.date, x + barWidth / 2, canvas.height - 20);
       
-      // Draw value
       if (data.amount > 0) {
         ctx.fillText(this.formatCurrency(data.amount), x + barWidth / 2, y - 10);
       }
     });
     
-    // Draw zero line if no data
     if (maxSales === 0) {
       ctx.strokeStyle = '#ccc';
       ctx.setLineDash([5, 3]);
@@ -324,7 +294,6 @@ export class ReportsPage implements OnInit {
 
   // Export functionality
   exportToExcel() {
-    // Simple CSV export implementation
     const csvData = this.generateCSVData();
     const blob = new Blob([csvData], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -335,15 +304,98 @@ export class ReportsPage implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  exportToPDF() {
-    // Simple PDF export using window.print() for basic implementation
-    window.print();
+  // Print functionality for Excel content
+  printExcelContent() {
+    this.currentDate = new Date();
+    
+    // Wait for the next tick to ensure the print content is updated
+    setTimeout(() => {
+      const printContent = document.getElementById('printContent');
+      if (printContent) {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+            <html>
+              <head>
+                <title>Sales Report</title>
+                <style>
+                  body { 
+                    font-family: Arial, sans-serif; 
+                    margin: 20px; 
+                    color: #333;
+                  }
+                  .print-header { 
+                    text-align: center; 
+                    margin-bottom: 30px; 
+                    border-bottom: 2px solid #333; 
+                    padding-bottom: 20px; 
+                  }
+                  .print-header h1 { 
+                    margin: 0 0 10px 0; 
+                    color: #333; 
+                    font-size: 24px; 
+                  }
+                  .print-header p { 
+                    margin: 0; 
+                    color: #666; 
+                    font-size: 14px; 
+                  }
+                  .print-summary, 
+                  .print-top-products, 
+                  .print-recent-orders { 
+                    margin-bottom: 30px; 
+                  }
+                  h2 { 
+                    color: #333; 
+                    border-bottom: 1px solid #ccc; 
+                    padding-bottom: 8px; 
+                    margin-bottom: 15px; 
+                    font-size: 18px; 
+                  }
+                  table { 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin-bottom: 15px;
+                  }
+                  th, td { 
+                    padding: 8px 12px; 
+                    text-align: left; 
+                    border: 1px solid #ddd; 
+                  }
+                  th { 
+                    background-color: #f8f9fa; 
+                    font-weight: bold; 
+                  }
+                  tr:nth-child(even) { 
+                    background-color: #f8f9fa; 
+                  }
+                  @media print {
+                    body { margin: 0; }
+                    .print-header { margin-top: 0; }
+                  }
+                </style>
+              </head>
+              <body>
+                ${printContent.innerHTML}
+              </body>
+            </html>
+          `);
+          printWindow.document.close();
+          
+          // Wait for content to load before printing
+          printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+            printWindow.close();
+          };
+        }
+      }
+    }, 100);
   }
 
   private generateCSVData(): string {
     const headers = ['Date', 'Product', 'Quantity', 'Amount', 'Transaction ID'];
     
-    // Replace flatMap with reduce for compatibility
     const rows: string[][] = this.orders.reduce((acc: string[][], order: Order) => {
       const orderRows = order.items.map((item: OrderItem) => [
         this.getOrderDate(order.createdAt).toISOString().split('T')[0],
@@ -358,7 +410,6 @@ export class ReportsPage implements OnInit {
     return [headers, ...rows].map(row => row.join(',')).join('\n');
   }
 
-  // Add inventory export
   exportInventoryToExcel() {
     const headers = ['Product Name', 'Current Stock', 'Stock Change', 'Product ID'];
     const rows = this.inventoryMovement.map(movement => [
@@ -378,7 +429,6 @@ export class ReportsPage implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  // Add the missing formatCurrency method
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-PH', {
       style: 'currency',
@@ -393,7 +443,6 @@ export class ReportsPage implements OnInit {
     return createdAt;
   }
 
-  // Optional: Refresh method
   refreshReports(event: any) {
     this.loadReports();
     setTimeout(() => {

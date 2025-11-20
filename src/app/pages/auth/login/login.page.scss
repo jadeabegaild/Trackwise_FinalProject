@@ -1,168 +1,191 @@
+// Color Variables based on the new scheme
+$primary-dark-blue: #1e4a63;       // Dark Blue/Teal for headers, main buttons
+$accent-green: #22c55e;            // Bright Green for success/confirm
+$accent-red: #dc2626;              // Warm Red for cancel/error
+$accent-orange: #f59e0b;           // Bright Orange for hold/pending
+$neutral-off-white: #f8fafc;       // Off-White for backgrounds
+$neutral-light-gray: #e2e8f0;      // Light Gray for input backgrounds
+$neutral-medium-gray: #64748b;     // Medium Gray for borders, secondary text
+$neutral-dark-gray: #1e293b;       // Very Dark Gray for primary text
+$neutral-white: #ffffff;           // Pure White for cards
+
 ion-content {
-  --background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --background: #{$neutral-off-white};
 }
 
-.login-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
+.auth-container {
+  max-width: 420px;
+  margin: auto;
+  padding: 26px;
 }
 
-.header-section {
+.auth-header {
   text-align: center;
-  margin-bottom: 30px;
-  
+  margin-bottom: 32px;
+
   .logo {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 14px;
+    border-radius: 12px;
   }
-  
-  h1 {
-    color: white;
-    font-weight: 700;
-    font-size: 1.8em;
-    margin-bottom: 10px;
+
+  h2 {
+    font-size: 1.7rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: $primary-dark-blue; // Changed to dark blue/teal
   }
-  
-  p {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 1em;
-    margin: 0;
+
+  span {
+    color: $neutral-medium-gray; // Changed to medium gray
+    font-size: 0.95rem;
   }
 }
 
-ion-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+.auth-card {
+  border-radius: 18px;
+  background: $neutral-white; // Changed to pure white
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
 
-.form-item {
-  --background: #f8f9fa;
-  --border-radius: 12px;
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --inner-padding-end: 0;
-  margin-bottom: 5px;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
-  
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: $neutral-light-gray; // Changed to light gray
+  border-radius: 12px;
+  padding: 14px;
+  margin-top: 16px;
+  border: 1.5px solid transparent;
+  transition: border 0.25s ease;
+
+  i {
+    color: $neutral-medium-gray; // Changed to medium gray
+    font-size: 1rem;
+  }
+
   &.invalid {
-    --background: #fff5f5;
-    border-color: var(--ion-color-danger);
+    border-color: $accent-red; // Changed to warm red
+    background: lighten($accent-red, 42%);
   }
-  
+
   &:focus-within {
-    --background: #ffffff;
-    border-color: var(--ion-color-primary);
-    box-shadow: 0 0 0 2px rgba(var(--ion-color-primary-rgb), 0.1);
+    border-color: $primary-dark-blue; // Changed to dark blue/teal
+    background: $neutral-white;
   }
 }
 
-.input-label {
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 8px;
-  
-  .required {
-    color: var(--ion-color-danger);
-  }
+.input-field {
+  width: 100%;
+  font-size: 1rem;
+  --padding-start: 0;
+  --padding-end: 0;
+  color: $neutral-dark-gray; // Added dark gray for text
 }
 
-.custom-input {
-  --padding-top: 16px;
-  --padding-bottom: 16px;
-  font-size: 1em;
-}
+.toggle-pass {
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  cursor: pointer;
+  color: $neutral-medium-gray; // Changed to medium gray
 
-.input-icon {
-  color: var(--ion-color-medium);
-  margin-right: 12px;
-  font-size: 1.2em;
-}
-
-.visibility-toggle {
-  --padding-start: 8px;
-  --padding-end: 8px;
-  --color: var(--ion-color-medium);
-  
   &:hover {
-    --color: var(--ion-color-primary);
+    color: $primary-dark-blue; // Changed to dark blue/teal
   }
 }
 
-.error-message {
-  padding: 5px 16px;
-  font-size: 0.85em;
-  
-  ion-text {
-    font-weight: 500;
+.error {
+  margin-top: 4px;
+  padding-left: 6px;
+  font-size: 0.82rem;
+  color: $accent-red; // Changed to warm red
+}
+
+.forgot {
+  text-align: right;
+  margin-top: 8px;
+
+  button {
+    background: none;
+    border: none;
+    color: $primary-dark-blue; // Changed to dark blue/teal
+    font-size: 0.88rem;
+    cursor: pointer;
   }
 }
 
-.forgot-password {
-  margin-top: -5px;
-  margin-bottom: 15px;
-  
-  ion-button {
-    --color: var(--ion-color-primary);
-    font-size: 0.9em;
-  }
-}
-
-.login-button {
-  --border-radius: 12px;
-  --padding-top: 20px;
-  --padding-bottom: 20px;
+.btn-primary {
+  border-radius: 12px;
+  margin-top: 20px;
+  padding: 16px;
   font-weight: 600;
-  font-size: 1.1em;
-  margin-top: 10px;
-  
+  font-size: 1.05rem;
+  background: $primary-dark-blue; // Changed to dark blue/teal
+  color: white;
+
   &:disabled {
-    --background: var(--ion-color-medium);
-    --color: var(--ion-color-medium-contrast);
+    filter: contrast(0.5);
+  }
+
+  // Success state for confirm/accept actions
+  &.success {
+    background: $accent-green;
   }
 }
 
-.register-link {
+.create {
   text-align: center;
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid var(--ion-color-light);
-  
-  p {
-    color: var(--ion-color-medium);
-    margin-bottom: 15px;
-    font-size: 0.95em;
+  margin-top: 26px;
+
+  span {
+    color: $neutral-medium-gray; // Changed to medium gray
+    font-size: 0.92rem;
   }
 }
 
-.register-button {
-  --color: var(--ion-color-primary);
-  font-weight: 600;
-  
-  ion-icon {
-    font-size: 1.1em;
-  }
+.btn-link {
+  font-size: 0.95rem;
+  margin-top: 6px;
+  color: $primary-dark-blue; // Changed to dark blue/teal
 }
 
-// Responsive design
+// Additional utility classes for the new color scheme
+.btn-success {
+  background: $accent-green;
+  color: white;
+}
+
+.btn-danger {
+  background: $accent-red;
+  color: white;
+}
+
+.btn-warning {
+  background: $accent-orange;
+  color: white;
+}
+
+.text-success {
+  color: $accent-green;
+}
+
+.text-danger {
+  color: $accent-red;
+}
+
+.text-warning {
+  color: $accent-orange;
+}
+
+.text-muted {
+  color: $neutral-medium-gray;
+}
+
+/* 📱 Mobile responsiveness */
 @media (max-width: 480px) {
-  .login-container {
-    padding: 10px;
-  }
-  
-  .header-section {
-    h1 {
-      font-size: 1.5em;
-    }
-    
-    p {
-      font-size: 0.9em;
-    }
+  .auth-container {
+    padding: 15px;
   }
 }

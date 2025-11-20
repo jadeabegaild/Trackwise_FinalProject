@@ -3,7 +3,7 @@
     
     <ion-title class="page-title">
       <div class="title-content">
-        <h1>Inventory Management</h1>
+        <h1>Inventory</h1>
         <!-- <p class="page-subtitle">Manage your products and stock levels</p> -->
       </div>
     </ion-title>
@@ -43,14 +43,14 @@
   <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)" class="modern-segment">
   <ion-segment-button value="all" class="category-btn">
     <div class="category-content">
-      <i class="fas fa-th-large"></i>
+      <!-- <i class="fas fa-th-large"></i> -->
       <ion-label>All</ion-label>
     </div>
   </ion-segment-button>
 
   <ion-segment-button *ngFor="let cat of categories" [value]="cat" class="category-btn">
     <div class="category-content">
-      <i class="fas fa-layer-group"></i>
+      <!-- <i class="fas fa-layer-group"></i> -->
       <ion-label>{{ cat | titlecase }}</ion-label>
     </div>
   </ion-segment-button>
@@ -68,8 +68,16 @@
   <!-- Products List -->
   <section class="products-section">
     <div class="section-header">
-      <h2>Product Inventory</h2>
-      <p>{{ filteredProducts.length }} products found</p>
+      <div class="header-content">
+        <div class="title-section">
+          <h2>Product Inventory</h2>
+          <p>{{ filteredProducts.length }} products found</p>
+        </div>
+        <ion-button (click)="openAddProductModal()" class="add-product-btn" fill="solid">
+          <i class="fas fa-plus"></i>
+          Add Product
+        </ion-button>
+      </div>
     </div>
 
     <ion-list class="modern-product-list">

@@ -1,141 +1,25 @@
 <ion-header>
   <ion-toolbar class="modern-toolbar">
-    
     <ion-title class="page-title">
       <div class="title-content">
         <h1>Dashboard</h1>
-        <!-- <p class="page-subtitle">Welcome back! Here's your business overview</p> -->
       </div>
     </ion-title>
 
-  </ion-toolbar>
-</ion-header>
-
-<div class="sidebar-overlay" [class.active]="isSidebarOpen" (click)="toggleSidebar()"></div>
-
-<ion-menu side="start" menuId="main-menu" [swipeGesture]="false" [contentId]="contentId" 
-           class="modern-sidebar" [class.sidebar-open]="isSidebarOpen">
-  <ion-header>
-    <ion-toolbar class="sidebar-toolbar">
-      <ion-title>Navigation</ion-title>
-      <ion-buttons slot="end">
-        <ion-button (click)="toggleSidebar()" class="close-sidebar">
-          <ion-icon name="close-outline"></ion-icon>
-        </ion-button>
-      </ion-buttons>
-    </ion-toolbar>
-  </ion-header>
-
-  <ion-content class="sidebar-content">
-    <div class="user-profile-section">
-      <div class="user-info">
-        <ion-avatar class="profile-avatar">
+    <ion-buttons slot="end">
+      <ion-button class="logout-button" (click)="logout()">
+        <i class="fas fa-sign-out-alt menu-icon"></i>
+        Logout
+      </ion-button>
+      
+      <!-- <ion-button class="user-button" (click)="toggleProfileDropdown($event)">
+        <ion-avatar class="user-avatar">
           <img [src]="user?.avatar || 'assets/images/user-avatar.png'" alt="Profile" />
         </ion-avatar>
-        <div class="user-details">
-          <h3>{{ user?.name || 'User Name' }}</h3>
-          <p>{{ user?.email || 'user@example.com' }}</p>
-          <ion-badge class="role-badge" [color]="user?.role === 'admin' ? 'primary' : 'medium'">
-            {{ user?.role || 'User' }}
-          </ion-badge>
-        </div>
-      </div>
-      
-      <ion-button expand="block" fill="solid" class="view-profile-btn" (click)="openProfile()">
-        <i class="fas fa-user-edit"></i>
-        View Profile
-      </ion-button>
-    </div>
-
-
-    <ion-list lines="none" class="sidebar-menu">
-      <ion-item button class="menu-item" [class.active]="currentPage === 'dashboard'" (click)="navigateTo('dashboard')">
-        <i class="fas fa-chart-pie menu-icon"></i>
-        <ion-label>Dashboard</ion-label>
-      </ion-item>
-
-      <ion-item button class="menu-item" [class.active]="currentPage === 'products'" (click)="navigateTo('products')">
-        <i class="fas fa-cube menu-icon"></i>
-        <ion-label>Products</ion-label>
-        <ion-badge color="primary" slot="end">{{ inventoryData.totalProducts }}</ion-badge>
-      </ion-item>
-
-      <ion-item button class="menu-item" [class.active]="currentPage === 'orders'" (click)="navigateTo('orders')">
-        <i class="fas fa-shopping-cart menu-icon"></i>
-        <ion-label>Orders</ion-label>
-        <ion-badge color="primary" slot="end">{{ salesData.totalOrders }}</ion-badge>
-      </ion-item>
-
-      <ion-item button class="menu-item" [class.active]="currentPage === 'customers'" (click)="navigateTo('customers')">
-        <i class="fas fa-users menu-icon"></i>
-        <ion-label>Customers</ion-label>
-      </ion-item>
-
-      <ion-item button class="menu-item" [class.active]="currentPage === 'inventory'" (click)="navigateTo('inventory')">
-        <i class="fas fa-warehouse menu-icon"></i>
-        <ion-label>Inventory</ion-label>
-        <ion-badge *ngIf="inventoryData.lowStockCount > 0" color="warning" slot="end">
-          {{ inventoryData.lowStockCount }}
-        </ion-badge>
-      </ion-item>
-
-      <ion-item button class="menu-item" [class.active]="currentPage === 'reports'" (click)="navigateTo('reports')">
-        <i class="fas fa-chart-bar menu-icon"></i>
-        <ion-label>Reports</ion-label>
-      </ion-item>
-    </ion-list>
-
-    <div class="profile-management-section">
-      <h4 class="section-title">Profile Management</h4>
-      
-      <ion-list lines="none" class="profile-menu">
-        <ion-item button class="profile-item" (click)="editProfile()">
-          <i class="fas fa-user-cog menu-icon"></i>
-          <ion-label>Edit Profile</ion-label>
-        </ion-item>
-
-        <ion-item button class="profile-item" (click)="changePassword()">
-          <i class="fas fa-lock menu-icon"></i>
-          <ion-label>Change Password</ion-label>
-        </ion-item>
-
-        <ion-item button class="profile-item" (click)="notificationSettings()">
-          <i class="fas fa-bell menu-icon"></i>
-          <ion-label>Notifications</ion-label>
-          <ion-toggle [checked]="user?.notificationsEnabled"></ion-toggle>
-        </ion-item>
-
-        <ion-item button class="profile-item" (click)="privacySettings()">
-          <i class="fas fa-shield-alt menu-icon"></i>
-          <ion-label>Privacy & Security</ion-label>
-        </ion-item>
-
-        <ion-item button class="profile-item" (click)="preferences()">
-          <i class="fas fa-sliders-h menu-icon"></i>
-          <ion-label>Preferences</ion-label>
-        </ion-item>
-      </ion-list>
-    </div>
-
-    <div class="sidebar-footer">
-      <ion-list lines="none">
-        <ion-item button class="footer-item" (click)="helpSupport()">
-          <i class="fas fa-question-circle menu-icon"></i>
-          <ion-label>Help & Support</ion-label>
-        </ion-item>
-
-        <ion-item button class="footer-item" (click)="logout()">
-          <i class="fas fa-sign-out-alt menu-icon"></i>
-          <ion-label>Logout</ion-label>
-        </ion-item>
-      </ion-list>
-      
-      <div class="app-version">
-        <p>v1.0.0</p>
-      </div>
-    </div>
-  </ion-content>
-</ion-menu>
+      </ion-button> -->
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
 
 <ion-content [id]="contentId" class="modern-content">
 
@@ -143,7 +27,7 @@
     <div class="loading-spinner">
       <ion-spinner name="crescent"></ion-spinner>
     </div>
-    <h3>Loading Dashboard</h3>
+    <h3>Loading Customer Data</h3>
     <p>Getting the latest business insights...</p>
   </div>
 
@@ -151,7 +35,7 @@
 
     <section class="stats-section">
       <div class="section-header">
-        <h2>Business Overview</h2>
+        <h2>Dashboard Overview</h2>
         <p>Key performance indicators at a glance</p>
       </div>
       
@@ -179,7 +63,6 @@
             </ion-card>
           </ion-col>
 
-   
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-card class="stat-card products-card">
               <div class="card-bg-icon">
@@ -207,7 +90,6 @@
             </ion-card>
           </ion-col>
 
-    
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-card class="stat-card alert-card">
               <div class="card-bg-icon">
@@ -234,7 +116,6 @@
             </ion-card>
           </ion-col>
 
-         
           <ion-col size="12" size-md="6" size-lg="3">
             <ion-card class="stat-card orders-card">
               <div class="card-bg-icon">
@@ -268,7 +149,6 @@
       
       <ion-grid class="charts-grid">
         <ion-row>
-    
           <ion-col size="12" size-lg="8">
             <ion-card class="chart-card">
               <ion-card-header>
@@ -388,76 +268,3 @@
     </section>
   </div>
 </ion-content>
-
-<ion-modal [isOpen]="isProfileModalOpen" (ionModalDidDismiss)="closeProfile()" class="profile-modal">
-  <ng-template>
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Profile Management</ion-title>
-        <ion-buttons slot="end">
-          <ion-button (click)="closeProfile()">
-            <ion-icon name="close-outline"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-      </ion-toolbar>
-    </ion-header>
-    
-    <ion-content class="profile-modal-content">
-      <div class="profile-form">
-        <div class="avatar-section">
-          <ion-avatar class="modal-avatar">
-            <img [src]="user?.avatar || 'assets/images/user-avatar.png'" alt="Profile" />
-          </ion-avatar>
-          <ion-button fill="clear" class="change-avatar-btn">
-            <i class="fas fa-camera"></i>
-            Change Photo
-          </ion-button>
-        </div>
-
-        <ion-list lines="none" class="form-list">
-          <ion-item>
-            <ion-label position="stacked">Full Name</ion-label>
-            <ion-input [value]="user?.name" placeholder="Enter your name"></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Email</ion-label>
-            <ion-input [value]="user?.email" type="email" placeholder="Enter your email"></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Phone Number</ion-label>
-            <ion-input [value]="user?.phone" type="tel" placeholder="Enter your phone number"></ion-input>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Role</ion-label>
-            <ion-select [value]="user?.role" placeholder="Select role">
-              <ion-select-option value="admin">Administrator</ion-select-option>
-              <ion-select-option value="manager">Manager</ion-select-option>
-              <ion-select-option value="user">User</ion-select-option>
-            </ion-select>
-          </ion-item>
-
-          <ion-item>
-            <ion-label position="stacked">Bio</ion-label>
-            <ion-textarea 
-              [value]="user?.bio" 
-              placeholder="Tell us about yourself"
-              rows="4">
-            </ion-textarea>
-          </ion-item>
-        </ion-list>
-
-        <div class="form-actions">
-          <ion-button expand="block" fill="outline" (click)="closeProfile()">
-            Cancel
-          </ion-button>
-          <ion-button expand="block" fill="solid" (click)="saveProfile()">
-            Save Changes
-          </ion-button>
-        </div>
-      </div>
-    </ion-content>
-  </ng-template>
-</ion-modal>

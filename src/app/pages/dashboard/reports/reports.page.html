@@ -1,21 +1,30 @@
 <ion-header>
   <ion-toolbar class="modern-toolbar">
-    
     <ion-title class="page-title">
       <div class="title-content">
         <h1>Sales Reports</h1>
         <!-- <p class="page-subtitle">Analytics and performance insights</p> -->
       </div>
     </ion-title>
-    
+
     <ion-buttons slot="end">
-      <ion-button (click)="exportToExcel()" [disabled]="isLoading" class="export-btn" fill="outline">
+      <ion-button
+        (click)="exportToExcel()"
+        [disabled]="isLoading"
+        class="export-btn"
+        fill="outline"
+      >
         <i class="fas fa-file-excel"></i>
         Excel
       </ion-button>
-      <ion-button (click)="exportToPDF()" [disabled]="isLoading" class="export-btn" fill="solid">
-        <i class="fas fa-file-pdf"></i>
-        PDF
+      <ion-button
+        (click)="printExcelContent()"
+        [disabled]="isLoading"
+        class="print-btn"
+        fill="solid"
+      >
+        <i class="fas fa-print"></i>
+        Print
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -38,7 +47,7 @@
         <h2>Sales Overview</h2>
         <p>Key performance indicators and metrics</p>
       </div> -->
-      
+
       <div class="stats-grid">
         <ion-card class="stat-card sales-card">
           <ion-card-content>
@@ -108,14 +117,17 @@
             </ion-badge>
           </div>
         </ion-card-header>
-        
+
         <ion-card-content>
           <div class="products-list">
-            <div class="product-item" *ngFor="let product of topProducts; let i = index">
+            <div
+              class="product-item"
+              *ngFor="let product of topProducts; let i = index"
+            >
               <div class="product-rank" [class.top-rank]="i < 3">
                 #{{ i + 1 }}
               </div>
-              
+
               <div class="product-info">
                 <div class="product-name">{{ product.name }}</div>
                 <div class="product-meta">
@@ -125,13 +137,13 @@
                   </span>
                 </div>
               </div>
-              
+
               <div class="product-total">
                 {{ formatCurrency(product.total) }}
               </div>
             </div>
           </div>
-          
+
           <!-- Empty State -->
           <div class="modern-empty-state" *ngIf="topProducts.length === 0">
             <div class="empty-icon">
@@ -158,14 +170,17 @@
             </ion-badge>
           </div>
         </ion-card-header>
-        
+
         <ion-card-content>
           <div class="movement-list">
-            <div class="movement-item" *ngFor="let movement of inventoryMovement">
+            <div
+              class="movement-item"
+              *ngFor="let movement of inventoryMovement"
+            >
               <div class="product-avatar">
                 <i class="fas fa-box"></i>
               </div>
-              
+
               <div class="movement-info">
                 <div class="product-name">{{ movement.productName }}</div>
                 <div class="stock-info">
@@ -175,21 +190,35 @@
                   </span>
                 </div>
               </div>
-              
-              <div class="movement-change" [class.positive]="movement.change >= 0" [class.negative]="movement.change < 0">
-                <i class="fas" [class.fa-arrow-up]="movement.change >= 0" [class.fa-arrow-down]="movement.change < 0"></i>
+
+              <div
+                class="movement-change"
+                [class.positive]="movement.change >= 0"
+                [class.negative]="movement.change < 0"
+              >
+                <i
+                  class="fas"
+                  [class.fa-arrow-up]="movement.change >= 0"
+                  [class.fa-arrow-down]="movement.change < 0"
+                ></i>
                 {{ movement.change >= 0 ? '+' : '' }}{{ movement.change }}
               </div>
             </div>
           </div>
-          
+
           <!-- Empty State -->
-          <div class="modern-empty-state" *ngIf="inventoryMovement.length === 0">
+          <div
+            class="modern-empty-state"
+            *ngIf="inventoryMovement.length === 0"
+          >
             <div class="empty-icon">
               <i class="fas fa-cubes"></i>
             </div>
             <h3>No inventory movements</h3>
-            <p>Inventory changes will appear here as products are sold or restocked</p>
+            <p>
+              Inventory changes will appear here as products are sold or
+              restocked
+            </p>
           </div>
         </ion-card-content>
       </ion-card>
@@ -209,20 +238,22 @@
             </ion-badge>
           </div>
         </ion-card-header>
-        
+
         <ion-card-content>
           <div class="orders-list">
             <div class="order-item" *ngFor="let order of orders.slice(0, 5)">
               <div class="order-avatar">
                 <i class="fas fa-receipt"></i>
               </div>
-              
+
               <div class="order-info">
-                <div class="order-id">Order #{{ order.id?.substring(0, 8) }}</div>
+                <div class="order-id">
+                  Order #{{ order.id?.substring(0, 8) }}
+                </div>
                 <div class="order-meta">
                   <span class="order-date">
                     <i class="fas fa-calendar"></i>
-                    {{ order.createdAt | date:'medium' }}
+                    {{ getOrderDate(order.createdAt) | date:'medium' }}
                   </span>
                   <span class="order-items">
                     <i class="fas fa-cube"></i>
@@ -230,13 +261,11 @@
                   </span>
                 </div>
               </div>
-              
-              <div class="order-total">
-                {{ formatCurrency(order.total) }}
-              </div>
+
+              <div class="order-total">{{ formatCurrency(order.total) }}</div>
             </div>
           </div>
-          
+
           <!-- Empty State -->
           <div class="modern-empty-state" *ngIf="orders.length === 0">
             <div class="empty-icon">
@@ -250,3 +279,77 @@
     </section>
   </div>
 </ion-content>
+
+<!-- Print Template (Hidden) -->
+<div id="printContent" style="display: none;">
+  <div class="print-header">
+    <h1>Sales Report</h1>
+    <p>Generated on: {{ currentDate | date:'medium' }}</p>
+  </div>
+  
+  <div class="print-summary">
+    <h2>Summary</h2>
+    <table>
+      <tr>
+        <td><strong>Total Sales:</strong></td>
+        <td>{{ formatCurrency(totalSales) }}</td>
+      </tr>
+      <tr>
+        <td><strong>Total Transactions:</strong></td>
+        <td>{{ transactions }}</td>
+      </tr>
+      <tr>
+        <td><strong>Average Transaction:</strong></td>
+        <td>{{ formatCurrency(avgTransaction) }}</td>
+      </tr>
+      <tr>
+        <td><strong>Items Sold:</strong></td>
+        <td>{{ itemsSold }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="print-top-products" *ngIf="topProducts.length > 0">
+    <h2>Top Selling Products</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Product Name</th>
+          <th>Quantity Sold</th>
+          <th>Total Revenue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of topProducts; let i = index">
+          <td>#{{ i + 1 }}</td>
+          <td>{{ product.name }}</td>
+          <td>{{ product.quantity }}</td>
+          <td>{{ formatCurrency(product.total) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="print-recent-orders" *ngIf="orders.length > 0">
+    <h2>Recent Orders</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Date</th>
+          <th>Items</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders.slice(0, 10)">
+          <td>#{{ order.id?.substring(0, 8) }}</td>
+          <td>{{ getOrderDate(order.createdAt) | date:'short' }}</td>
+          <td>{{ order.items.length }}</td>
+          <td>{{ formatCurrency(order.total) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
