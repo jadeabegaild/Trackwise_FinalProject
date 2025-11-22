@@ -944,3 +944,64 @@ ion-card-title {
 ion-card-subtitle {
   text-transform: none !important;
 }
+
+.scanner-modal video {
+  width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  object-fit: cover;
+}
+
+.scanner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.scanner-instruction {
+  margin-top: 12px;
+  font-size: 0.95rem;
+  color: #666;
+}
+
+.scan-message {
+  margin-top: 8px;
+  font-weight: bold;
+  color: red;
+}
+
+.scan-btn {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.horizontal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Push button to the right */
+  gap: 12px;
+  flex-wrap: wrap; /* Allow stacking on small screens */
+  margin-bottom: 16px;
+}
+
+.header-left h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.header-left .product-count {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.scan-btn {
+  white-space: nowrap;
+}
+

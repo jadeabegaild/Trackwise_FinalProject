@@ -74,11 +74,19 @@
 
   <!-- Products Grid -->
   <section class="products-section">
-    <div class="section-header">
-      <h2>Available Products</h2>
-      <p>{{filteredProducts.length}} products found</p>
-    </div>
-    
+<div class="section-header horizontal-header">
+  <div class="header-left">
+    <h2>Available Products</h2>
+    <p class="product-count">{{filteredProducts.length}} products found</p>
+  </div>
+
+  <ion-button class="scan-btn" (click)="openScannerModal()" fill="solid" color="primary" size="small">
+    <i class="fas fa-barcode"></i> Scan Product
+  </ion-button>
+</div>
+
+
+
     <ion-grid class="products-grid">
       <ion-row>
         <ion-col size="6" size-md="4" size-lg="3" *ngFor="let product of filteredProducts">
@@ -340,6 +348,34 @@
         <ion-button expand="block" fill="outline" (click)="isReceiptOpen = false">
           Close
         </ion-button>
+      </div>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-modal [isOpen]="isScannerOpen" (didDismiss)="closeScannerModal()" class="scanner-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Scan Product</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeScannerModal()">
+            <ion-icon name="close-outline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="scanner-content" fullscreen>
+      <div class="scanner-container">
+        <!-- Video feed -->
+        <video #videoPreview autoplay muted playsinline></video>
+
+        <!-- Instruction -->
+        <p class="scanner-instruction">Point the camera at a product barcode</p>
+
+        <!-- Scan result / error -->
+        <p *ngIf="scanMessage" class="scan-message">{{ scanMessage }}</p>
       </div>
     </ion-content>
   </ng-template>

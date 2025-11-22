@@ -13,11 +13,6 @@
     <i class="fas fa-layer-group"></i>
     Add Category
   </ion-button>
-
-  <ion-button (click)="openAddProductModal()" class="add-product-btn">
-    <i class="fas fa-plus"></i>
-    Add Product
-  </ion-button>
 </ion-buttons>
 
   </ion-toolbar>
@@ -39,24 +34,23 @@
       </div>
     </div>
 
-    <div class="categories-container">
-  <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)" class="modern-segment">
-  <ion-segment-button value="all" class="category-btn">
-    <div class="category-content">
-      <!-- <i class="fas fa-th-large"></i> -->
+ <div class="categories-container">
+  <ion-segment [value]="selectedCategory" (ionChange)="filterByStockStatus($event)" class="modern-segment">
+    <ion-segment-button value="all" class="category-btn">
       <ion-label>All</ion-label>
-    </div>
-  </ion-segment-button>
+    </ion-segment-button>
+    <ion-segment-button value="in-stock" class="category-btn">
+      <ion-label>In Stock</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="low-stock" class="category-btn">
+      <ion-label>Low Stock</ion-label>
+    </ion-segment-button>
+    <ion-segment-button value="out-of-stock" class="category-btn">
+      <ion-label>Out of Stock</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</div>
 
-  <ion-segment-button *ngFor="let cat of categories" [value]="cat" class="category-btn">
-    <div class="category-content">
-      <!-- <i class="fas fa-layer-group"></i> -->
-      <ion-label>{{ cat | titlecase }}</ion-label>
-    </div>
-  </ion-segment-button>
-</ion-segment>
-
-    </div>
   </section>
 
   <!-- Swipe Hint -->
@@ -77,6 +71,10 @@
           <i class="fas fa-plus"></i>
           Add Product
         </ion-button>
+<ion-button fill="clear" (click)="openUpdateInventoryModal(); $event.stopPropagation()">
+  <i class="fas fa-boxes"></i> Update Qty
+</ion-button>
+
       </div>
     </div>
 
@@ -328,13 +326,15 @@
 </ion-item>
 
 <!-- Scanner Video Preview -->
+<!-- Scanner Video Preview -->
 <div *ngIf="scanning" class="scanner-container">
-  <video #scannerPreview width="100%" height="240"></video>
+  <video #addProductScannerPreview width="100%" height="240" autoplay muted playsinline></video>
 
   <ion-button expand="block" color="danger" (click)="stopBarcodeScan()">
     Stop Scan
   </ion-button>
 </div>
+
 
           </ion-list>
         </div>
@@ -415,3 +415,51 @@
     </ion-footer>
   </ng-template>
 </ion-modal>
+
+<ion-modal [isOpen]="updateInventoryModalOpen" (didDismiss)="closeUpdateInventoryModal()" class="update-inventory-modal">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button (click)="closeUpdateInventoryModal()">
+            <i class="fas fa-times"></i>
+          </ion-button>
+        </ion-buttons>
+        <ion-title>Update Inventory</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+
+      <!-- Scan Product Button (hide when scanning) -->
+      <ion-button *ngIf="!inventoryScanning" expand="block" (click)="startInventoryScan()">
+        <i class="fas fa-qrcode"></i> Scan Product Barcode
+      </ion-button>
+
+      <!-- Scanner Section (visible when scanning) -->
+     <div *ngIf="inventoryScanning" class="scanner-container">
+  <video #inventoryScannerPreview width="100%" height="240" autoplay></video>
+  <ion-button expand="block" color="danger" (click)="stopInventoryScan()">Stop Scan</ion-button>
+</div>
+
+
+      <!-- Product Info + Add Quantity -->
+      <div *ngIf="scannedProduct">
+        <h3>{{ scannedProduct.name }}</h3>
+        <p>Category: {{ scannedProduct.category }}</p>
+        <p>Current Quantity: {{ scannedProduct.quantity }}</p>
+
+        <ion-item>
+          <ion-label position="stacked">Additional Quantity</ion-label>
+          <ion-input type="number" [(ngModel)]="additionalQuantity" min="1"></ion-input>
+        </ion-item>
+
+        <ion-button fill="clear" class="action-btn" (click)="saveInventoryUpdate()">
+          <i class="fas fa-boxes"></i> Update Quantity
+        </ion-button>
+      </div>
+
+    </ion-content>
+  </ng-template>
+</ion-modal>
+

@@ -1,8 +1,10 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AlertController, LoadingController } from '@ionic/angular';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef} from '@angular/core';
+import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { ProductService, Product } from '../../../services/product.service';
 import { ReportsService, Order } from '../../../services/reports';
 import { Subscription } from 'rxjs';
+import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
+
 
 interface CartItem extends Product {
   cartQuantity: number;
@@ -22,6 +24,7 @@ interface ExtendedOrder extends Order {
   standalone: false,
 })
 export class PosPage implements OnInit, OnDestroy {
+   @ViewChild('videoPreview', { static: false }) videoElement!: ElementRef;
   products: Product[] = [];
   filteredProducts: Product[] = [];
   cartItems: CartItem[] = [];
@@ -34,15 +37,25 @@ export class PosPage implements OnInit, OnDestroy {
   isReceiptOpen: boolean = false;
   receiptData: any;
 
+  scanner: BrowserMultiFormatReader;
+  controls: IScannerControls | undefined;
+
+  isScannerOpen = false;
+  scanMessage = '';
+
   private productsSubscription: Subscription | undefined;
 
   constructor(
+    private toastController: ToastController,
     private alertController: AlertController,
     private loadingController: LoadingController,
     private productService: ProductService,
     private reportsService: ReportsService
-  ) {}
+  ) {
+    this.scanner = new BrowserMultiFormatReader();
+  }
 
+  
   async ngOnInit() {
     const loading = await this.loadingController.create({
       message: 'Loading products...',
@@ -486,4 +499,72 @@ export class PosPage implements OnInit, OnDestroy {
     });
     await alert.present();
   }
+
+ openScannerModal() {
+  this.isScannerOpen = true;
+  setTimeout(() => this.startScan(), 300); // Wait for modal to render
+}
+
+closeScannerModal() {
+  this.isScannerOpen = false;
+  this.stopScan();
+  this.scanMessage = '';
+}
+
+lastScanTime = 0; // track last scan timestamp
+scanInterval = 3000; // 3 seconds in milliseconds
+
+async startScan() {
+  try {
+    const video = this.videoElement.nativeElement as HTMLVideoElement;
+
+    this.controls = await this.scanner.decodeFromVideoDevice(
+      undefined, // default camera
+      video,
+      (result, error, controls) => {
+        if (result) {
+          const now = new Date().getTime();
+          if (now - this.lastScanTime >= this.scanInterval) {
+            this.lastScanTime = now;
+            this.handleBarcode(result.getText());
+          }
+        }
+      }
+    );
+  } catch (err) {
+    console.error('Scanner error', err);
+    this.showToast('Cannot access camera', 'danger');
+  }
+}
+
+
+handleBarcode(barcode: string) {
+  const product = this.products.find(p => p.barcode === barcode);
+
+  if (product) {
+    this.addToCart(product); // Use your existing addToCart method
+    this.showToast(`${product.name} added to cart`);
+  } else {
+    this.scanMessage = 'Product not found';
+    this.showToast('Product not found', 'warning');
+  }
+}
+
+stopScan() {
+  if (this.controls) this.controls.stop();
+}
+
+
+async showToast(message: string, color: string = 'success') {
+  const toast = await this.toastController.create({
+    message,
+    duration: 1500,
+    color,
+    position: 'top',
+  });
+  toast.present();
+}
+
+
+
 }

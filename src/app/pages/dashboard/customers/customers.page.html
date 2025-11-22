@@ -195,10 +195,11 @@
                     <ion-card-title>Top Products</ion-card-title>
                     <ion-card-subtitle>Best Sellers</ion-card-subtitle>
                   </div>
-                  <ion-button fill="clear" class="view-all-button">
-                    View All
-                    <i class="fas fa-chevron-right"></i>
-                  </ion-button>
+                <ion-button routerLink="/dashboard/inventory" fill="clear" class="view-all-button">
+                  View All
+                  <i class="fas fa-chevron-right"></i>
+                </ion-button>
+
                 </div>
               </ion-card-header>
               <ion-card-content>
@@ -251,16 +252,16 @@
               <ion-label>
                 <h3>{{ item.name }}</h3>
                 <p>Current stock: {{ item.currentStock }}</p>
-                <p class="stock-threshold">Threshold: {{ item.threshold }}</p>
+                <!-- <p class="stock-threshold">Threshold: {{ item.threshold }}</p> -->
               </ion-label>
-              <div class="alert-actions" slot="end">
+              <!-- <div class="alert-actions" slot="end">
                 <ion-button fill="clear" size="small" class="action-button">
                   <i class="fas fa-edit"></i>
                 </ion-button>
                 <ion-button fill="clear" size="small" class="action-button">
                   <i class="fas fa-sync-alt"></i>
                 </ion-button>
-              </div>
+              </div> -->
             </ion-item>
           </ion-list>
         </ion-card-content>

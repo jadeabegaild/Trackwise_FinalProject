@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/co
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { ProductService, Product } from '../../../services/product.service';
-import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
+import { BrowserMultiFormatReader, IScannerControls} from '@zxing/browser';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -12,7 +12,12 @@ import { Subscription } from 'rxjs';
   standalone: false,
 })
 export class InventoryPage implements OnInit, OnDestroy {
-  @ViewChild('scannerPreview', { static: false }) scannerPreview!: ElementRef<HTMLVideoElement>;
+ // Add Product Scanner
+@ViewChild('addProductScannerPreview', { static: false })
+addProductVideo!: ElementRef<HTMLVideoElement>;
+
+  @ViewChild('inventoryScannerPreview', { static: false })
+inventoryVideo!: ElementRef<HTMLVideoElement>;
 
   // Product data
   products: Product[] = [];
@@ -37,6 +42,16 @@ export class InventoryPage implements OnInit, OnDestroy {
   scanner = new BrowserMultiFormatReader();
   scanControls: IScannerControls | null = null;
   scanning = false;
+    // --- INVENTORY SCANNER ---
+  updateInventoryModalOpen = false;
+  scannedProduct: Product | null = null;
+  additionalQuantity: number = 0;
+
+  // Scanner
+  inventoryScanner = new BrowserMultiFormatReader();
+  inventoryControls: IScannerControls | null = null;
+  inventoryScanning = false;
+
 
   private productsSubscription: Subscription | undefined;
 
@@ -93,7 +108,7 @@ export class InventoryPage implements OnInit, OnDestroy {
   getStockStatus(quantity: number): { label: string, color: string } { 
     if (quantity === 0) {
       return { label: 'Out of Stock', color: 'danger' }; 
-    } else if (quantity < 10) { 
+    } else if (quantity < 50) { 
       return { label: 'Low Stock', color: 'warning' }; 
     } else { 
       return { label: 'In Stock', color: 'success' }; 
@@ -108,6 +123,12 @@ export class InventoryPage implements OnInit, OnDestroy {
     });
   }
 
+  filterByStockStatus(event: any) {
+  this.selectedCategory = event.detail.value;
+  this.applyFilters();
+}
+
+
   // ================================
   // 🔹 FILTERING
   // ================================
@@ -121,19 +142,32 @@ export class InventoryPage implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-  applyFilters() {
-    this.filteredProducts = this.products.filter(product => {
-      const matchesSearch =
-        product.name.toLowerCase().includes(this.searchTerm) ||
-        product.barcode.toLowerCase().includes(this.searchTerm);
+applyFilters() {
+  this.filteredProducts = this.products.filter(product => {
+    const matchesSearch =
+      product.name.toLowerCase().includes(this.searchTerm) ||
+      product.barcode.toLowerCase().includes(this.searchTerm);
 
-      const matchesCategory =
-        this.selectedCategory === 'all' ||
-        product.category === this.selectedCategory;
+    let matchesStockStatus = true;
 
-      return matchesSearch && matchesCategory;
-    });
-  }
+    switch (this.selectedCategory) {
+      case 'in-stock':
+        matchesStockStatus = product.quantity >= 20;
+        break;
+      case 'low-stock':
+        matchesStockStatus = product.quantity > 0 && product.quantity < 20;
+        break;
+      case 'out-of-stock':
+        matchesStockStatus = product.quantity === 0;
+        break;
+      default:
+        matchesStockStatus = true; // 'all'
+    }
+
+    return matchesSearch && matchesStockStatus;
+  });
+}
+
 
   // ================================
   // 🔹 OPEN MODALS
@@ -283,29 +317,38 @@ onImageSelected(event: any) {
   // 🔹 BARCODE SCANNING
   // ================================
   async startBarcodeScan() {
-    this.scanning = true;
+  this.scanning = true;
 
-    const video = this.scannerPreview.nativeElement;
+  // Wait a tiny bit for video element to render
+  setTimeout(async () => {
+    const video = this.addProductVideo.nativeElement;
+
+    const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+    if (!devices.length) return console.error('No camera found');
 
     this.scanControls = await this.scanner.decodeFromVideoDevice(
-      undefined,
+      devices[0].deviceId, // default camera
       video,
       (result, err) => {
         if (result) {
           this.productForm.patchValue({ barcode: result.getText() });
           this.stopBarcodeScan();
         }
+
+        if (err) console.error(err);
       }
     );
-  }
+  }, 50); // small delay ensures video exists
+}
 
-  stopBarcodeScan() {
-    if (this.scanControls) {
-      this.scanControls.stop();
-      this.scanControls = null;
-    }
-    this.scanning = false;
+stopBarcodeScan() {
+  if (this.scanControls) {
+    this.scanControls.stop();
+    this.scanControls = null;
   }
+  this.scanning = false;
+}
+
 
   // ================================
   // 🔹 CATEGORY SAVE
@@ -337,6 +380,91 @@ onImageSelected(event: any) {
       this.presentErrorAlert('Failed to save category');
     }
   }
+
+
+// Open modal
+openUpdateInventoryModal() {
+  this.updateInventoryModalOpen = true;
+  this.scannedProduct = null;
+  this.additionalQuantity = 0;
+}
+
+// Close modal
+closeUpdateInventoryModal() {
+  this.updateInventoryModalOpen = false;
+  this.stopInventoryScan();
+  this.scannedProduct = null;
+  this.additionalQuantity = 0;
+}
+
+async startInventoryScan() {
+  this.inventoryScanning = true;
+
+  setTimeout(async () => {
+    const video = this.inventoryVideo.nativeElement;
+    if (!video) return console.error('Inventory video not found');
+
+    const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+    if (!devices.length) return console.error('No camera found');
+
+    this.inventoryControls = await this.inventoryScanner.decodeFromVideoDevice(
+      devices[0].deviceId,
+      video,
+      (result, err) => {
+        if (result) {
+          this.findProductByBarcode(result.getText());
+          if (this.inventoryControls) {
+            this.inventoryControls.stop();
+            this.inventoryControls = null;
+          }
+          this.inventoryScanning = false;
+        }
+        if (err) console.error(err);
+      }
+    );
+  }, 50); // wait for video to render
+}
+
+
+stopInventoryScan() {
+  if (this.inventoryControls) {
+    this.inventoryControls.stop();
+    this.inventoryControls = null;
+  }
+  this.inventoryScanning = false; // only hides video
+}
+
+
+// Find product by barcode
+findProductByBarcode(barcode: string) {
+  const product = this.products.find(p => p.barcode === barcode);
+  if (product) {
+    this.scannedProduct = product;
+    this.additionalQuantity = 0;
+  } else {
+    this.presentErrorAlert('Product not found.');
+  }
+}
+
+// Save updated quantity
+async saveInventoryUpdate() {
+  if (!this.scannedProduct) return;
+
+  const newQty = this.scannedProduct.quantity + Number(this.additionalQuantity);
+
+  try {
+    await this.productService.updateProduct(this.scannedProduct.id!, { quantity: newQty });
+
+    // Update locally
+    const index = this.products.findIndex(p => p.id === this.scannedProduct!.id);
+    if (index > -1) this.products[index].quantity = newQty;
+    this.applyFilters();
+
+    this.closeUpdateInventoryModal();
+  } catch (error) {
+    this.presentErrorAlert('Failed to update quantity');
+  }
+}
 
   // ================================
   // 🔹 ERROR ALERT

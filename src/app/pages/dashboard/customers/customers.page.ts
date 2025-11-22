@@ -658,7 +658,8 @@ export class CustomerPage implements OnInit {
       .filter(product => product.quantity <= 10) 
       .map(product => ({
         name: product.name,
-        currentStock: product.quantity 
+        currentStock: product.quantity,
+        image: product.image,
       }));
     
     this.inventoryData = {
