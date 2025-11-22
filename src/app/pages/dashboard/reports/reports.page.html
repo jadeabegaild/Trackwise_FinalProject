@@ -18,7 +18,7 @@
         Excel
       </ion-button>
       <ion-button
-        (click)="printExcelContent()"
+        (click)="printSalesReport()"
         [disabled]="isLoading"
         class="print-btn"
         fill="solid"
@@ -331,6 +331,28 @@
     </table>
   </div>
 
+  <div class="print-inventory" *ngIf="inventoryMovement.length > 0">
+    <h2>Inventory Movement</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Current Stock</th>
+          <th>Stock Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let movement of inventoryMovement">
+          <td>{{ movement.productName }}</td>
+          <td>{{ movement.currentStock }}</td>
+          <td [class.positive]="movement.change >= 0" [class.negative]="movement.change < 0">
+            {{ movement.change >= 0 ? '+' : '' }}{{ movement.change }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <div class="print-recent-orders" *ngIf="orders.length > 0">
     <h2>Recent Orders</h2>
     <table>
@@ -352,4 +374,4 @@
       </tbody>
     </table>
   </div>
-</div>
+</div> 

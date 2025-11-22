@@ -304,93 +304,199 @@ export class ReportsPage implements OnInit {
     window.URL.revokeObjectURL(url);
   }
 
-  // Print functionality for Excel content
-  printExcelContent() {
-    this.currentDate = new Date();
-    
-    // Wait for the next tick to ensure the print content is updated
-    setTimeout(() => {
+  printSalesReport() {
+  this.isLoading = true;
+  this.currentDate = new Date();
+  
+  setTimeout(() => {
+    try {
       const printContent = document.getElementById('printContent');
-      if (printContent) {
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-          printWindow.document.write(`
-            <html>
-              <head>
-                <title>Sales Report</title>
-                <style>
-                  body { 
-                    font-family: Arial, sans-serif; 
-                    margin: 20px; 
-                    color: #333;
-                  }
-                  .print-header { 
-                    text-align: center; 
-                    margin-bottom: 30px; 
-                    border-bottom: 2px solid #333; 
-                    padding-bottom: 20px; 
-                  }
-                  .print-header h1 { 
-                    margin: 0 0 10px 0; 
-                    color: #333; 
-                    font-size: 24px; 
-                  }
-                  .print-header p { 
-                    margin: 0; 
-                    color: #666; 
-                    font-size: 14px; 
-                  }
-                  .print-summary, 
-                  .print-top-products, 
-                  .print-recent-orders { 
-                    margin-bottom: 30px; 
-                  }
-                  h2 { 
-                    color: #333; 
-                    border-bottom: 1px solid #ccc; 
-                    padding-bottom: 8px; 
-                    margin-bottom: 15px; 
-                    font-size: 18px; 
-                  }
-                  table { 
-                    width: 100%; 
-                    border-collapse: collapse; 
-                    margin-bottom: 15px;
-                  }
-                  th, td { 
-                    padding: 8px 12px; 
-                    text-align: left; 
-                    border: 1px solid #ddd; 
-                  }
-                  th { 
-                    background-color: #f8f9fa; 
-                    font-weight: bold; 
-                  }
-                  tr:nth-child(even) { 
-                    background-color: #f8f9fa; 
-                  }
-                  @media print {
-                    body { margin: 0; }
-                    .print-header { margin-top: 0; }
-                  }
-                </style>
-              </head>
-              <body>
-                ${printContent.innerHTML}
-              </body>
-            </html>
-          `);
-          printWindow.document.close();
-          
-          // Wait for content to load before printing
-          printWindow.onload = () => {
-            printWindow.focus();
-            printWindow.print();
-            printWindow.close();
-          };
-        }
+      
+      if (!printContent) {
+        console.error('Print content not found');
+        this.isLoading = false;
+        return;
       }
-    }, 100);
+
+      // Create a temporary print container
+      const printContainer = document.createElement('div');
+      printContainer.innerHTML = printContent.innerHTML;
+      printContainer.style.cssText = `
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 10000;
+        padding: 20px;
+        overflow: auto;
+      `;
+      
+      // Add print styles
+      const printStyles = document.createElement('style');
+      printStyles.textContent = `
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .print-container, .print-container * {
+            visibility: visible;
+          }
+          .print-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+        }
+        
+        .print-container {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          color: #333;
+          line-height: 1.4;
+        }
+        
+        .print-header {
+          text-align: center;
+          margin-bottom: 30px;
+          border-bottom: 2px solid #1e4a63;
+          padding-bottom: 20px;
+        }
+        
+        .print-header h1 {
+          margin: 0 0 10px 0;
+          color: #1e4a63;
+          font-size: 28px;
+          font-weight: 700;
+        }
+        
+        .print-header p {
+          margin: 0;
+          color: #64748b;
+          font-size: 14px;
+        }
+        
+        .print-summary,
+        .print-top-products,
+        .print-inventory,
+        .print-recent-orders {
+          margin-bottom: 30px;
+        }
+        
+        .print-summary h2,
+        .print-top-products h2,
+        .print-inventory h2,
+        .print-recent-orders h2 {
+          color: #1e4a63;
+          border-bottom: 1px solid #e2e8f0;
+          padding-bottom: 8px;
+          margin-bottom: 15px;
+          font-size: 20px;
+          font-weight: 600;
+        }
+        
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 15px;
+          font-size: 14px;
+        }
+        
+        th, td {
+          padding: 12px;
+          text-align: left;
+          border: 1px solid #e2e8f0;
+        }
+        
+        th {
+          background-color: #f8fafc;
+          font-weight: 600;
+          color: #1e293b;
+        }
+        
+        tr:nth-child(even) {
+          background-color: #f8fafc;
+        }
+        
+        .positive {
+          color: #22c55e;
+          font-weight: 600;
+        }
+        
+        .negative {
+          color: #dc2626;
+          font-weight: 600;
+        }
+      `;
+      
+      printContainer.classList.add('print-container');
+      printContainer.appendChild(printStyles);
+      document.body.appendChild(printContainer);
+      
+      // Add close button
+      const closeButton = document.createElement('button');
+      closeButton.textContent = 'Close Print View';
+      closeButton.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #dc2626;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 6px;
+        cursor: pointer;
+        z-index: 10001;
+      `;
+      closeButton.onclick = () => {
+        document.body.removeChild(printContainer);
+        document.body.removeChild(closeButton);
+        this.isLoading = false;
+      };
+      document.body.appendChild(closeButton);
+      
+      // Trigger print
+      setTimeout(() => {
+        window.print();
+        
+        // Clean up after print
+        const cleanup = () => {
+          if (document.body.contains(printContainer)) {
+            document.body.removeChild(printContainer);
+          }
+          if (document.body.contains(closeButton)) {
+            document.body.removeChild(closeButton);
+          }
+          this.isLoading = false;
+        };
+        
+        // Different browsers handle print differently
+        if (window.matchMedia) {
+          const mediaQueryList = window.matchMedia('print');
+          mediaQueryList.addListener((mql) => {
+            if (!mql.matches) {
+              cleanup();
+            }
+          });
+        }
+        
+        // Fallback cleanup
+        setTimeout(cleanup, 1000);
+        
+      }, 500);
+      
+    } catch (error) {
+      console.error('Error during printing:', error);
+      this.isLoading = false;
+      this.showToast('Error generating print document');
+    }
+  }, 100);
+}
+
+  // Keep the old method for compatibility
+  printExcelContent() {
+    this.printSalesReport();
   }
 
   private generateCSVData(): string {
@@ -448,5 +554,10 @@ export class ReportsPage implements OnInit {
     setTimeout(() => {
       event.target.complete();
     }, 1000);
+  }
+
+  private showToast(message: string) {
+    // Implement your toast notification here
+    console.log(message);
   }
 }

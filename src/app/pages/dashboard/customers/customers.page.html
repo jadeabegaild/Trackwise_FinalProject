@@ -175,13 +175,13 @@
                   <div class="chart-wrapper">
                     <canvas #salesChartCanvas></canvas>
                   </div>
-                  <div class="chart-legend" *ngIf="salesChartData.length > 0">
+                  <!-- <div class="chart-legend" *ngIf="salesChartData.length > 0">
                     <div class="legend-item" *ngFor="let data of salesChartData">
                       <span class="legend-color" [style.background]="data.color"></span>
                       <span class="legend-label">{{ data.label }}</span>
                       <span class="legend-value">{{ formatCurrency(data.sales) }}</span>
                     </div>
-                  </div>
+                  </div> -->
                 </div>
               </ion-card-content>
             </ion-card>

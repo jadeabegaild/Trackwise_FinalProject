@@ -1,4 +1,3 @@
-/* reports.page.scss */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 // Updated color variables based on the new palette
@@ -529,127 +528,36 @@
   }
 }
 
-/* Print Styles */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  
-  #printContent,
-  #printContent * {
-    visibility: visible;
-  }
-  
-  #printContent {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20px;
-    background: var(--neutral-white);
-    
-    .print-header {
-      text-align: center;
-      margin-bottom: 30px;
-      border-bottom: 2px solid var(--neutral-dark-gray);
-      padding-bottom: 20px;
-      
-      h1 {
-        margin: 0 0 10px 0;
-        color: var(--neutral-dark-gray);
-        font-size: 24px;
-      }
-      
-      p {
-        margin: 0;
-        color: var(--neutral-medium-gray);
-        font-size: 14px;
-      }
-    }
-    
-    .print-summary,
-    .print-top-products,
-    .print-recent-orders {
-      margin-bottom: 30px;
-      
-      h2 {
-        color: var(--neutral-dark-gray);
-        border-bottom: 1px solid var(--neutral-light-gray);
-        padding-bottom: 8px;
-        margin-bottom: 15px;
-        font-size: 18px;
-      }
-      
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        
-        th, td {
-          padding: 8px 12px;
-          text-align: left;
-          border: 1px solid var(--neutral-light-gray);
-        }
-        
-        th {
-          background-color: var(--neutral-off-white);
-          font-weight: bold;
-          color: var(--neutral-dark-gray);
-        }
-        
-        tr:nth-child(even) {
-          background-color: var(--neutral-off-white);
-        }
-        
-        .positive {
-          color: var(--accent-green);
-          font-weight: 600;
-        }
-        
-        .negative {
-          color: var(--accent-red);
-          font-weight: 600;
-        }
-      }
-    }
-  }
-}
-
-/* Animations */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.stat-card {
-  animation: slideIn 0.6s ease forwards;
-  opacity: 0;
-  
-  @for $i from 1 through 4 {
-    &:nth-child(#{$i}) {
-      animation-delay: #{$i * 0.1}s;
-    }
-  }
-}
-
-.modern-card {
-  animation: slideIn 0.6s ease forwards;
-  opacity: 0;
-  
-  @for $i from 1 through 3 {
-    &:nth-child(#{$i}) {
-      animation-delay: #{$i * 0.15}s;
-    }
-  }
-}
-
-/* Responsive Design */
+/* Enhanced Mobile Responsiveness for Print Button */
 @media (max-width: 768px) {
+  .modern-toolbar {
+    .page-title {
+      .title-content {
+        h1 {
+          font-size: 1.2rem;
+        }
+      }
+    }
+    
+    ion-buttons {
+      display: flex;
+      gap: 8px;
+      
+      .export-btn,
+      .print-btn {
+        --padding-start: 8px;
+        --padding-end: 8px;
+        min-height: 36px;
+        font-size: 0.75rem;
+        
+        i {
+          margin-right: 4px;
+          font-size: 0.7rem;
+        }
+      }
+    }
+  }
+  
   .modern-reports-content {
     padding: 12px;
   }
@@ -657,15 +565,6 @@
   .stats-grid {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-  
-  .modern-toolbar .export-btn,
-  .modern-toolbar .print-btn {
-    font-size: 0.7rem;
-    
-    i {
-      margin-right: 4px;
-    }
   }
   
   .products-list .product-item,
@@ -676,6 +575,33 @@
 }
 
 @media (max-width: 480px) {
+  .modern-toolbar {
+    .page-title {
+      .title-content {
+        h1 {
+          font-size: 1.1rem;
+        }
+      }
+    }
+    
+    ion-buttons {
+      gap: 6px;
+      
+      .export-btn,
+      .print-btn {
+        --padding-start: 6px;
+        --padding-end: 6px;
+        min-height: 32px;
+        font-size: 0.7rem;
+        
+        i {
+          margin-right: 3px;
+          font-size: 0.65rem;
+        }
+      }
+    }
+  }
+  
   .modern-reports-content {
     padding: 8px;
   }
@@ -723,6 +649,61 @@
   .orders-list .order-item .order-meta {
     flex-direction: column;
     gap: 4px;
+  }
+}
+
+/* Enhanced Print Button Styles */
+.print-btn {
+  --background: var(--primary-dark-blue);
+  --background-hover: #2d5a7a;
+  --background-activated: #1a3d52;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* Ensure print content is properly hidden */
+#printContent {
+  display: none !important;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card {
+  animation: slideIn 0.6s ease forwards;
+  opacity: 0;
+  
+  @for $i from 1 through 4 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+.modern-card {
+  animation: slideIn 0.6s ease forwards;
+  opacity: 0;
+  
+  @for $i from 1 through 3 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.15}s;
+    }
   }
 }
 
