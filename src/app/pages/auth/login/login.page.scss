@@ -15,8 +15,15 @@ ion-content {
 
 .auth-container {
   max-width: 420px;
-  margin: auto;
   padding: 26px;
+  
+  // --- Centering Logic ---
+  margin: 0 auto;            // Centers horizontally
+  min-height: 100%;          // Ensures the container fills the screen height
+  display: flex;             // Enables Flexbox
+  flex-direction: column;    // Stacks elements vertically
+  justify-content: center;   // Pushes content to the vertical center
+  // -----------------------
 }
 
 .auth-header {
@@ -34,18 +41,18 @@ ion-content {
     font-size: 1.7rem;
     font-weight: 600;
     margin-bottom: 6px;
-    color: $primary-dark-blue; // Changed to dark blue/teal
+    color: $primary-dark-blue;
   }
 
   span {
-    color: $neutral-medium-gray; // Changed to medium gray
+    color: $neutral-medium-gray;
     font-size: 0.95rem;
   }
 }
 
 .auth-card {
   border-radius: 18px;
-  background: $neutral-white; // Changed to pure white
+  background: $neutral-white;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
 
@@ -53,7 +60,7 @@ ion-content {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: $neutral-light-gray; // Changed to light gray
+  background: $neutral-light-gray;
   border-radius: 12px;
   padding: 14px;
   margin-top: 16px;
@@ -61,17 +68,17 @@ ion-content {
   transition: border 0.25s ease;
 
   i {
-    color: $neutral-medium-gray; // Changed to medium gray
+    color: $neutral-medium-gray;
     font-size: 1rem;
   }
 
   &.invalid {
-    border-color: $accent-red; // Changed to warm red
+    border-color: $accent-red;
     background: lighten($accent-red, 42%);
   }
 
   &:focus-within {
-    border-color: $primary-dark-blue; // Changed to dark blue/teal
+    border-color: $primary-dark-blue;
     background: $neutral-white;
   }
 }
@@ -81,7 +88,7 @@ ion-content {
   font-size: 1rem;
   --padding-start: 0;
   --padding-end: 0;
-  color: $neutral-dark-gray; // Added dark gray for text
+  color: $neutral-dark-gray;
 }
 
 .toggle-pass {
@@ -89,10 +96,10 @@ ion-content {
   border: none;
   font-size: 1.05rem;
   cursor: pointer;
-  color: $neutral-medium-gray; // Changed to medium gray
+  color: $neutral-medium-gray;
 
   &:hover {
-    color: $primary-dark-blue; // Changed to dark blue/teal
+    color: $primary-dark-blue;
   }
 }
 
@@ -100,7 +107,7 @@ ion-content {
   margin-top: 4px;
   padding-left: 6px;
   font-size: 0.82rem;
-  color: $accent-red; // Changed to warm red
+  color: $accent-red;
 }
 
 .forgot {
@@ -110,7 +117,7 @@ ion-content {
   button {
     background: none;
     border: none;
-    color: $primary-dark-blue; // Changed to dark blue/teal
+    color: $primary-dark-blue;
     font-size: 0.88rem;
     cursor: pointer;
   }
@@ -122,7 +129,7 @@ ion-content {
   padding: 16px;
   font-weight: 600;
   font-size: 1.05rem;
-  background: $primary-dark-blue; // Changed to dark blue/teal
+  background: $primary-dark-blue;
   color: white;
 
   &:disabled {
@@ -140,7 +147,7 @@ ion-content {
   margin-top: 26px;
 
   span {
-    color: $neutral-medium-gray; // Changed to medium gray
+    color: $neutral-medium-gray;
     font-size: 0.92rem;
   }
 }
@@ -148,7 +155,7 @@ ion-content {
 .btn-link {
   font-size: 0.95rem;
   margin-top: 6px;
-  color: $primary-dark-blue; // Changed to dark blue/teal
+  color: $primary-dark-blue;
 }
 
 // Additional utility classes for the new color scheme
