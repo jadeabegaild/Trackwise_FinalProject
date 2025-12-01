@@ -1,9 +1,8 @@
 <ion-header>
-  <ion-toolbar class="modern-toolbar">
-    <ion-title class="page-title">
+  <ion-toolbar class="modern-toolbar" style="--padding-start: 20px; --padding-end: 20px; --padding-top: 0; --padding-bottom: 0;">
+    <ion-title class="page-title" style="padding-inline-start: 0; padding-inline-end: 0; padding-top: 0; padding-bottom: 0; font-size: 1.25rem; font-weight: 500; letter-spacing: 0.0125em;">
       <div class="title-content">
-        <h1>Sales Reports</h1>
-        <!-- <p class="page-subtitle">Analytics and performance insights</p> -->
+        <h1 style="margin: 0; font-size: 1.5rem; font-weight: 800; color: #1e293b; text-transform: none; letter-spacing: -0.02em;">Reports</h1>
       </div>
     </ion-title>
 
@@ -13,6 +12,7 @@
         [disabled]="isLoading"
         class="export-btn"
         fill="outline"
+        style="height: 36px; margin: 0; margin-inline-start: 8px; --border-radius: 8px; font-size: 0.8rem; font-weight: 600;"
       >
         <i class="fas fa-file-excel"></i>
         Excel
@@ -22,6 +22,7 @@
         [disabled]="isLoading"
         class="print-btn"
         fill="solid"
+        style="height: 36px; margin: 0; margin-inline-start: 8px; --border-radius: 8px; font-size: 0.8rem; font-weight: 600; --background: #1e4a63;"
       >
         <i class="fas fa-print"></i>
         Print
@@ -31,7 +32,6 @@
 </ion-header>
 
 <ion-content class="modern-reports-content">
-  <!-- Loading Spinner -->
   <div class="loading-container" *ngIf="isLoading">
     <div class="loading-spinner">
       <ion-spinner name="crescent"></ion-spinner>
@@ -41,13 +41,7 @@
   </div>
 
   <div *ngIf="!isLoading" class="reports-content">
-    <!-- Sales Overview Cards -->
     <section class="overview-section">
-      <!-- <div class="section-header">
-        <h2>Sales Overview</h2>
-        <p>Key performance indicators and metrics</p>
-      </div> -->
-
       <div class="stats-grid">
         <ion-card class="stat-card sales-card">
           <ion-card-content>
@@ -103,7 +97,6 @@
       </div>
     </section>
 
-    <!-- Top Products Section -->
     <section class="top-products-section">
       <ion-card class="modern-card">
         <ion-card-header class="card-header">
@@ -144,7 +137,6 @@
             </div>
           </div>
 
-          <!-- Empty State -->
           <div class="modern-empty-state" *ngIf="topProducts.length === 0">
             <div class="empty-icon">
               <i class="fas fa-chart-bar"></i>
@@ -156,7 +148,6 @@
       </ion-card>
     </section>
 
-    <!-- Inventory Movement Section -->
     <section class="inventory-section">
       <ion-card class="modern-card">
         <ion-card-header class="card-header">
@@ -206,7 +197,6 @@
             </div>
           </div>
 
-          <!-- Empty State -->
           <div
             class="modern-empty-state"
             *ngIf="inventoryMovement.length === 0"
@@ -224,7 +214,6 @@
       </ion-card>
     </section>
 
-    <!-- Recent Orders Section -->
     <section class="orders-section">
       <ion-card class="modern-card">
         <ion-card-header class="card-header">
@@ -266,7 +255,6 @@
             </div>
           </div>
 
-          <!-- Empty State -->
           <div class="modern-empty-state" *ngIf="orders.length === 0">
             <div class="empty-icon">
               <i class="fas fa-shopping-bag"></i>
@@ -280,7 +268,6 @@
   </div>
 </ion-content>
 
-<!-- Print Template (Hidden) -->
 <div id="printContent" style="display: none;">
   <div class="print-header">
     <h1>Sales Report</h1>
@@ -374,4 +361,4 @@
       </tbody>
     </table>
   </div>
-</div> 
+</div>

@@ -1,3 +1,5 @@
+/* reports.page.scss */
+@use "sass:color";
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
 // Updated color variables based on the new palette
@@ -17,77 +19,89 @@
   --secondary-gradient: linear-gradient(135deg, #f59e0b 0%, #eab308 100%);
   --success-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   --warning-gradient: linear-gradient(135deg, #64748b 0%, #475569 100%);
-  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --card-hover-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12), 0 10px 10px -5px rgba(0, 0, 0, 0.06);
+  
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --card-hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* Modern Header */
+/* --- FIXED HEADER (Identical to Inventory) --- */
 .modern-toolbar {
   --background: var(--neutral-white);
   --border-color: transparent;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  --min-height: 70px;
   
-  .page-title {
+  /* CRITICAL: Exact padding match to Inventory */
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  
+  ion-title {
     padding: 0;
     
-    .title-content {
-      h1 {
-        margin: 0;
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: var(--neutral-dark-gray);
-        text-transform: none;
-      }
+    .page-title {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
       
-      .page-subtitle {
-        margin: 0;
-        font-size: 0.8rem;
-        color: var(--neutral-medium-gray);
-        font-weight: 400;
-        text-transform: none;
+      .title-content {
+        h1 {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: var(--neutral-dark-gray);
+          text-transform: none;
+          letter-spacing: -0.02em;
+        }
       }
     }
   }
   
-  .menu-button, .filter-button {
-    --padding-start: 8px;
-    --padding-end: 8px;
+  ion-buttons {
+    margin-right: 0;
+    margin-inline-end: 0;
     
-    i {
-      font-size: 1.2rem;
-      color: var(--neutral-medium-gray);
-    }
-  }
-  
-  .export-btn {
-    --border-radius: 10px;
-    --border-color: var(--accent-green);
-    --color: var(--accent-green);
-    font-weight: 600;
-    font-size: 0.8rem;
-    
-    i {
-      margin-right: 6px;
+    ion-button {
+      height: 36px;
+      margin: 0;
+      margin-inline-start: 4px;
+      --border-radius: 8px;
       font-size: 0.8rem;
+      font-weight: 600;
+      
+      i {
+        margin-right: 6px;
+        font-size: 0.8rem;
+      }
     }
-  }
-  
-  .print-btn {
-    --border-radius: 10px;
-    --background: var(--primary-dark-blue);
-    font-weight: 600;
-    font-size: 0.8rem;
     
-    i {
-      margin-right: 6px;
-      font-size: 0.8rem;
+    .export-btn {
+      --border-color: var(--accent-green);
+      --color: var(--accent-green);
+      --border-width: 1px;
+      --background-hover: rgba(34, 197, 94, 0.1);
+    }
+    
+    .print-btn {
+      --background: var(--primary-dark-blue);
+      --color: var(--neutral-white);
+      --background-hover: #2d5a7a;
+      --background-activated: #1a3d52;
     }
   }
 }
 
+/* --- FIXED CONTENT PADDING (Matches Inventory) --- */
 .modern-reports-content {
   --background: var(--neutral-off-white);
-  padding: 16px;
+  /* Correct padding to match other pages */
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 20px; /* Increased top padding to separate from header */
+  --padding-bottom: 16px;
 }
 
 /* Loading Container */
@@ -126,11 +140,11 @@
 
 /* Section Headers */
 .section-header {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   
   h2 {
-    margin: 0 0 4px 0;
-    font-size: 1.3rem;
+    margin: 0 0 2px 0;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--neutral-dark-gray);
     text-transform: none;
@@ -139,7 +153,7 @@
   p {
     margin: 0;
     color: var(--neutral-medium-gray);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     text-transform: none;
   }
 }
@@ -154,7 +168,7 @@
 
 .stat-card {
   margin: 0;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: var(--card-shadow);
   transition: all 0.3s ease;
   background: var(--neutral-white);
@@ -165,19 +179,19 @@
   }
   
   ion-card-content {
-    padding: 20px;
+    padding: 16px;
     display: flex;
     align-items: center;
     gap: 16px;
     
     .card-icon {
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       color: var(--neutral-white);
     }
     
@@ -185,23 +199,23 @@
       flex: 1;
       
       h3 {
-        margin: 0 0 4px 0;
-        font-size: 0.9rem;
+        margin: 0 0 2px 0;
+        font-size: 0.85rem;
         font-weight: 600;
         color: var(--neutral-medium-gray);
         text-transform: none;
       }
       
       h1 {
-        margin: 0 0 4px 0;
-        font-size: 1.8rem;
+        margin: 0 0 2px 0;
+        font-size: 1.6rem;
         font-weight: 700;
         color: var(--neutral-dark-gray);
       }
       
       p {
         margin: 0;
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         color: var(--neutral-medium-gray);
         text-transform: none;
       }
@@ -228,7 +242,7 @@
 /* Modern Cards */
 .modern-card {
   margin: 0 0 20px 0;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: var(--card-shadow);
   transition: all 0.3s ease;
   background: var(--neutral-white);
@@ -238,7 +252,7 @@
   }
   
   .card-header {
-    padding: 20px 20px 0 20px;
+    padding: 16px 16px 0 16px;
     
     .header-content {
       display: flex;
@@ -256,7 +270,7 @@
         }
         
         ion-card-title {
-          font-size: 1.2rem;
+          font-size: 1.1rem;
           font-weight: 700;
           color: var(--neutral-dark-gray);
           margin: 0;
@@ -275,7 +289,7 @@
   }
   
   ion-card-content {
-    padding: 16px 20px 20px 20px;
+    padding: 16px;
   }
 }
 
@@ -292,8 +306,8 @@
     }
     
     .product-rank {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
       border-radius: 8px;
       background: var(--neutral-light-gray);
       display: flex;
@@ -316,14 +330,14 @@
       .product-name {
         font-weight: 600;
         color: var(--neutral-dark-gray);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         font-size: 0.9rem;
         text-transform: none;
       }
       
       .product-meta {
         .quantity {
-          font-size: 0.8rem;
+          font-size: 0.75rem;
           color: var(--neutral-medium-gray);
           display: flex;
           align-items: center;
@@ -360,7 +374,7 @@
     .product-avatar {
       width: 40px;
       height: 40px;
-      border-radius: 10px;
+      border-radius: 8px;
       background: var(--neutral-light-gray);
       display: flex;
       align-items: center;
@@ -379,14 +393,14 @@
       .product-name {
         font-weight: 600;
         color: var(--neutral-dark-gray);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         font-size: 0.9rem;
         text-transform: none;
       }
       
       .stock-info {
         .current-stock {
-          font-size: 0.8rem;
+          font-size: 0.75rem;
           color: var(--neutral-medium-gray);
           display: flex;
           align-items: center;
@@ -402,21 +416,21 @@
     
     .movement-change {
       font-weight: 700;
-      padding: 6px 10px;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
       display: flex;
       align-items: center;
       gap: 4px;
       
       &.positive {
-        background: lighten(#22c55e, 45%);
-        color: darken(#22c55e, 20%);
+        background: color.adjust(#22c55e, $lightness: 45%);
+        color: color.adjust(#22c55e, $lightness: -20%);
       }
       
       &.negative {
-        background: lighten(#dc2626, 42%);
-        color: darken(#dc2626, 20%);
+        background: color.adjust(#dc2626, $lightness: 42%);
+        color: color.adjust(#dc2626, $lightness: -20%);
       }
       
       i {
@@ -441,7 +455,7 @@
     .order-avatar {
       width: 40px;
       height: 40px;
-      border-radius: 10px;
+      border-radius: 8px;
       background: var(--neutral-light-gray);
       display: flex;
       align-items: center;
@@ -460,7 +474,7 @@
       .order-id {
         font-weight: 600;
         color: var(--neutral-dark-gray);
-        margin-bottom: 4px;
+        margin-bottom: 2px;
         font-size: 0.9rem;
         text-transform: none;
       }
@@ -470,7 +484,7 @@
         gap: 12px;
         
         .order-date, .order-items {
-          font-size: 0.8rem;
+          font-size: 0.75rem;
           color: var(--neutral-medium-gray);
           display: flex;
           align-items: center;
@@ -528,7 +542,7 @@
   }
 }
 
-/* Enhanced Mobile Responsiveness for Print Button */
+/* Enhanced Mobile Responsiveness */
 @media (max-width: 768px) {
   .modern-toolbar {
     .page-title {
@@ -556,21 +570,6 @@
         }
       }
     }
-  }
-  
-  .modern-reports-content {
-    padding: 12px;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
-  .products-list .product-item,
-  .movement-list .movement-item,
-  .orders-list .order-item {
-    padding: 10px 0;
   }
 }
 
@@ -600,10 +599,6 @@
         }
       }
     }
-  }
-  
-  .modern-reports-content {
-    padding: 8px;
   }
   
   .section-header {
@@ -668,7 +663,7 @@
   }
 }
 
-/* Ensure print content is properly hidden */
+/* Ensure print content is properly hidden on normal screen */
 #printContent {
   display: none !important;
 }
@@ -761,5 +756,79 @@ ion-badge {
   
   i {
     font-size: 0.7rem;
+  }
+}
+
+/* ------------------------------------------------ */
+/* NEW PRINT STYLES - Fixes the Modal/Preview Issue */
+/* ------------------------------------------------ */
+@media print {
+  /* 1. Hide the main app UI */
+  ion-header,
+  ion-content,
+  ion-footer,
+  ion-tab-bar,
+  .loading-container,
+  ion-router-outlet {
+    display: none !important;
+  }
+
+  /* 2. Reset the body to basic HTML flow for printing */
+  body,
+  ion-app,
+  .ion-page {
+    background: #ffffff !important;
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    display: block !important;
+  }
+
+  /* 3. Reveal and style the Print Content */
+  #printContent {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100vh;
+    background: #ffffff;
+    color: black;
+    padding: 20px;
+    z-index: 9999;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* Proper table styling for print */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      page-break-inside: auto;
+
+      th, td {
+        border: 1px solid #ccc;
+        padding: 8px 12px;
+        text-align: left;
+        font-size: 12px;
+        color: #000;
+      }
+
+      th {
+        background-color: #f2f2f2 !important;
+        font-weight: bold;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+      }
+    }
+
+    h1 { font-size: 24px; margin-bottom: 5px; color: #000; }
+    h2 { font-size: 18px; margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid #333; padding-bottom: 5px; color: #000; }
+    p { margin-bottom: 20px; color: #444; }
   }
 }

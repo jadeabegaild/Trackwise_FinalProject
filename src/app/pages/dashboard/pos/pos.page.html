@@ -1,11 +1,9 @@
-<!-- pos.page.html -->
 <ion-header>
   <ion-toolbar class="modern-toolbar">
     
     <ion-title class="page-title">
       <div class="title-content">
         <h1>Point of Sale</h1>
-        <!-- <p class="page-subtitle">Quick and easy checkout</p> -->
       </div>
     </ion-title>
     
@@ -18,74 +16,60 @@
           </ion-badge>
         </div>
       </ion-button>
-      
-      <!-- <ion-button class="user-button">
-        <ion-avatar class="user-avatar">
-          <img src="assets/images/user-avatar.png" alt="User" />
-        </ion-avatar>
-      </ion-button> -->
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="modern-pos-content">
-  <!-- Search Section -->
   <section class="search-section">
     <div class="search-container">
       <div class="search-box">
-        <!-- <i class="fas fa-search search-icon"></i> -->
         <ion-searchbar 
           placeholder="Search products..." 
           (ionInput)="searchProducts($event)"
           class="modern-searchbar">
         </ion-searchbar>
       </div>
-      
-      <!-- <ion-button class="filter-button" fill="outline">
-        <i class="fas fa-sliders-h"></i>
-      </ion-button> -->
     </div>
   </section>
 
-<section class="categories-section">
-  <div class="categories-container">
-    <ion-segment [value]="selectedCategory" (ionChange)="filterByCategory($event)" class="modern-segment">
+  <section class="categories-section">
+    <div class="categories-container">
+      <ion-segment 
+        [value]="selectedCategory" 
+        (ionChange)="filterByCategory($event)" 
+        class="modern-segment" 
+        scrollable="true" 
+        mode="md">
 
-      <!-- Static "All" button -->
-      <ion-segment-button value="all" class="category-btn">
-        <div class="category-content">
-          <!-- <i class="fas fa-th-large"></i> -->
-          <ion-label>All</ion-label>
-        </div>
-      </ion-segment-button>
+        <ion-segment-button value="all" class="category-btn">
+          <div class="category-content">
+            <ion-label>All</ion-label>
+          </div>
+        </ion-segment-button>
 
-      <!-- Dynamic categories from Firebase -->
-      <ion-segment-button *ngFor="let cat of categories" [value]="cat" class="category-btn">
-        <div class="category-content">
-          <!-- <i class="fas fa-tag"></i> -->
-          <ion-label>{{ cat | titlecase }}</ion-label>
-        </div>
-      </ion-segment-button>
+        <ion-segment-button *ngFor="let cat of categories" [value]="cat" class="category-btn">
+          <div class="category-content">
+            <ion-label>{{ cat | titlecase }}</ion-label>
+          </div>
+        </ion-segment-button>
 
-    </ion-segment>
-  </div>
-</section>
+      </ion-segment>
+    </div>
+  </section>
 
 
-  <!-- Products Grid -->
   <section class="products-section">
-<div class="section-header horizontal-header">
-  <div class="header-left">
-    <h2>Available Products</h2>
-    <p class="product-count">{{filteredProducts.length}} products found</p>
-  </div>
+    <div class="section-header horizontal-header">
+      <div class="header-left">
+        <h2>Available Products</h2>
+        <p class="product-count">{{filteredProducts.length}} products found</p>
+      </div>
 
-  <ion-button class="scan-btn" (click)="openScannerModal()" fill="solid" color="primary" size="small">
-    <i class="fas fa-barcode"></i> Scan Product
-  </ion-button>
-</div>
-
-
+      <ion-button class="scan-btn" (click)="openScannerModal()" fill="solid" color="primary" size="small">
+        <i class="fas fa-barcode"></i> Scan Product
+      </ion-button>
+    </div>
 
     <ion-grid class="products-grid">
       <ion-row>
@@ -130,7 +114,6 @@
       </ion-row>
     </ion-grid>
 
-    <!-- Empty State -->
     <div class="modern-empty-state" *ngIf="filteredProducts.length === 0">
       <div class="empty-icon">
         <i class="fas fa-search"></i>
@@ -145,7 +128,6 @@
   </section>
 </ion-content>
 
-<!-- Enhanced Cart Modal -->
 <ion-modal [isOpen]="isCartOpen" (didDismiss)="closeCart()" class="modern-cart-modal">
   <ng-template>
     <ion-header class="cart-header">
@@ -174,7 +156,6 @@
     </ion-header>
     
     <ion-content class="cart-content">
-      <!-- Cart Items -->
       <div class="cart-items-section" *ngIf="cartItems.length > 0">
         <div class="section-label">
           <i class="fas fa-shopping-basket"></i>
@@ -214,7 +195,6 @@
         </ion-list>
       </div>
 
-      <!-- Empty Cart State -->
       <div class="modern-empty-cart" *ngIf="cartItems.length === 0">
         <div class="empty-cart-icon">
           <i class="fas fa-shopping-cart"></i>
@@ -227,7 +207,6 @@
         </ion-button>
       </div>
 
-      <!-- Order Summary -->
       <ion-card class="order-summary-card" *ngIf="cartItems.length > 0">
         <ion-card-header>
           <ion-card-title>
@@ -301,14 +280,12 @@
     </ion-header>
 
     <ion-content class="receipt-content" fullscreen>
-      <!-- Receipt Header -->
       <div class="receipt-header-section">
         <h3 class="store-name">TrackWise</h3>
         <p class="receipt-date">{{receiptData?.date | date:'medium'}}</p>
         <hr />
       </div>
 
-      <!-- Items List -->
       <ion-list class="receipt-items-list">
         <ion-item *ngFor="let item of receiptData?.items" lines="none" class="receipt-item">
           <ion-label class="item-label">
@@ -322,7 +299,6 @@
       </ion-list>
       <hr />
 
-      <!-- Summary Section -->
       <div class="receipt-summary">
         <div class="summary-row">
           <span>Subtotal</span>
@@ -342,7 +318,6 @@
         </div>
       </div>
 
-      <!-- Footer -->
       <div class="receipt-footer">
         <p>Thank you for shopping with us!</p>
         <ion-button expand="block" fill="outline" (click)="isReceiptOpen = false">
@@ -368,13 +343,8 @@
 
     <ion-content class="scanner-content" fullscreen>
       <div class="scanner-container">
-        <!-- Video feed -->
         <video #videoPreview autoplay muted playsinline></video>
-
-        <!-- Instruction -->
         <p class="scanner-instruction">Point the camera at a product barcode</p>
-
-        <!-- Scan result / error -->
         <p *ngIf="scanMessage" class="scan-message">{{ scanMessage }}</p>
       </div>
     </ion-content>
