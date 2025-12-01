@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef} from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { AlertController, LoadingController, ToastController } from '@ionic/angular';
 import { ProductService, Product } from '../../../services/product.service';
 import { ReportsService, Order } from '../../../services/reports';
@@ -24,7 +24,8 @@ interface ExtendedOrder extends Order {
   standalone: false,
 })
 export class PosPage implements OnInit, OnDestroy {
-   @ViewChild('videoPreview', { static: false }) videoElement!: ElementRef;
+  @ViewChild('videoPreview', { static: false }) videoElement!: ElementRef;
+  
   products: Product[] = [];
   filteredProducts: Product[] = [];
   cartItems: CartItem[] = [];
@@ -43,6 +44,10 @@ export class PosPage implements OnInit, OnDestroy {
   isScannerOpen = false;
   scanMessage = '';
 
+  // Scanner Debounce Logic
+  lastScanTime = 0; 
+  scanInterval = 2000; // Reduced to 2 seconds for better UX (adjust if needed)
+
   private productsSubscription: Subscription | undefined;
 
   constructor(
@@ -55,7 +60,7 @@ export class PosPage implements OnInit, OnDestroy {
     this.scanner = new BrowserMultiFormatReader();
   }
 
-  
+
   async ngOnInit() {
     const loading = await this.loadingController.create({
       message: 'Loading products...',
@@ -81,6 +86,9 @@ export class PosPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    // FIX: Stop scanner to prevent memory leaks/camera lock
+    this.stopScan();
+
     if (this.productsSubscription) {
       this.productsSubscription.unsubscribe();
     }
@@ -207,7 +215,7 @@ export class PosPage implements OnInit, OnDestroy {
 
       // Proceed with normal checkout for smaller orders
       await this.processNormalCheckout(loading);
-      
+
     } catch (error: any) {
       console.error('Error during checkout:', error);
       await loading.dismiss();
@@ -229,9 +237,9 @@ export class PosPage implements OnInit, OnDestroy {
     // Estimate size (Firestore limit is 1,048,576 bytes)
     const estimatedSize = JSON.stringify(orderData).length;
     const isTooLarge = estimatedSize > 900000; // Conservative buffer
-    
+
     console.log(`Order size estimate: ${estimatedSize} bytes`);
-    
+
     return isTooLarge;
   }
 
@@ -263,7 +271,7 @@ export class PosPage implements OnInit, OnDestroy {
         }
       ]
     });
-    
+
     await alert.present();
   }
 
@@ -285,7 +293,7 @@ export class PosPage implements OnInit, OnDestroy {
         if (orderId) {
           orderIds.push(orderId);
         }
-        
+
         // Update stock for this chunk
         await this.updateStockForChunk(chunk);
       }
@@ -297,7 +305,7 @@ export class PosPage implements OnInit, OnDestroy {
 
       // Show success with receipt for first chunk
       this.showSplitOrderSuccess(orderChunks.length);
-      
+
     } catch (error: any) {
       await loading.dismiss();
       console.error('Error processing split order:', error);
@@ -315,7 +323,7 @@ export class PosPage implements OnInit, OnDestroy {
 
   private async processOrderChunk(chunk: CartItem[], chunkIndex: number, totalChunks: number): Promise<string | null> {
     const minimizedItems = this.minimizeOrderItems(chunk);
-    
+
     const orderData: Partial<ExtendedOrder> = {
       items: minimizedItems,
       subtotal: this.calculateChunkSubtotal(chunk),
@@ -353,7 +361,7 @@ export class PosPage implements OnInit, OnDestroy {
       if (product) {
         const newQuantity = product.quantity - cartItem.cartQuantity;
         await this.productService.updateProductQuantity(cartItem.id, newQuantity);
-        
+
         // Update local products array
         product.quantity = newQuantity;
       }
@@ -370,7 +378,7 @@ export class PosPage implements OnInit, OnDestroy {
       totalOrders: orderIds.length,
       totalAmount: this.getTotal()
     };
-    
+
     // Use the existing saveOrder method or create a new one
     await this.reportsService.saveOrderRelationship(relationshipData);
   }
@@ -378,7 +386,7 @@ export class PosPage implements OnInit, OnDestroy {
   private async processNormalCheckout(loading: HTMLIonLoadingElement) {
     // Use minimized items to reduce size
     const minimizedItems = this.minimizeOrderItems(this.cartItems);
-    
+
     const orderData: Partial<Order> = {
       items: minimizedItems,
       subtotal: this.getSubtotal(),
@@ -500,71 +508,92 @@ export class PosPage implements OnInit, OnDestroy {
     await alert.present();
   }
 
- openScannerModal() {
-  this.isScannerOpen = true;
-  setTimeout(() => this.startScan(), 300); // Wait for modal to render
-}
+  // ============================================
+  // 🔹 SCANNNER LOGIC (FIXED)
+  // ============================================
 
-closeScannerModal() {
-  this.isScannerOpen = false;
-  this.stopScan();
-  this.scanMessage = '';
-}
+  openScannerModal() {
+    this.isScannerOpen = true;
+    // Wait slightly longer to ensure video element is rendered
+    setTimeout(() => this.startScan(), 300); 
+  }
 
-lastScanTime = 0; // track last scan timestamp
-scanInterval = 3000; // 3 seconds in milliseconds
+  closeScannerModal() {
+    this.isScannerOpen = false;
+    this.stopScan();
+    this.scanMessage = '';
+  }
 
-async startScan() {
-  try {
-    const video = this.videoElement.nativeElement as HTMLVideoElement;
+  async startScan() {
+    // FIX: Added safety check to ensure element exists
+    if (!this.videoElement || !this.videoElement.nativeElement) {
+      console.warn('Video element not initialized yet');
+      return;
+    }
 
-    this.controls = await this.scanner.decodeFromVideoDevice(
-      undefined, // default camera
-      video,
-      (result, error, controls) => {
-        if (result) {
-          const now = new Date().getTime();
-          if (now - this.lastScanTime >= this.scanInterval) {
-            this.lastScanTime = now;
-            this.handleBarcode(result.getText());
-          }
-        }
+    try {
+      const video = this.videoElement.nativeElement as HTMLVideoElement;
+
+      // FIX: List devices to find the back camera
+      const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+      if (!devices || devices.length === 0) {
+        this.showToast('No camera found', 'danger');
+        return;
       }
-    );
-  } catch (err) {
-    console.error('Scanner error', err);
-    this.showToast('Cannot access camera', 'danger');
+      
+      // Try to find back camera, else use the first available
+      const selectedDevice = devices.find(d => d.label.toLowerCase().includes('back'))?.deviceId || devices[0].deviceId;
+
+      this.controls = await this.scanner.decodeFromVideoDevice(
+        selectedDevice,
+        video,
+        (result, error, controls) => {
+          if (result) {
+            const now = new Date().getTime();
+            // Debounce logic to prevent double scans
+            if (now - this.lastScanTime >= this.scanInterval) {
+              this.lastScanTime = now;
+              this.handleBarcode(result.getText());
+            }
+          }
+          // Note: We intentionally ignore errors here to prevent console flooding
+        }
+      );
+    } catch (err) {
+      console.error('Scanner error', err);
+      this.showToast('Cannot access camera', 'danger');
+    }
   }
-}
 
 
-handleBarcode(barcode: string) {
-  const product = this.products.find(p => p.barcode === barcode);
+  handleBarcode(barcode: string) {
+    const product = this.products.find(p => p.barcode === barcode);
 
-  if (product) {
-    this.addToCart(product); // Use your existing addToCart method
-    this.showToast(`${product.name} added to cart`);
-  } else {
-    this.scanMessage = 'Product not found';
-    this.showToast('Product not found', 'warning');
+    if (product) {
+      this.addToCart(product);
+      this.showToast(`${product.name} added to cart`);
+    } else {
+      this.scanMessage = 'Product not found';
+      this.showToast('Product not found', 'warning');
+    }
   }
-}
 
-stopScan() {
-  if (this.controls) this.controls.stop();
-}
-
-
-async showToast(message: string, color: string = 'success') {
-  const toast = await this.toastController.create({
-    message,
-    duration: 1500,
-    color,
-    position: 'top',
-  });
-  toast.present();
-}
+  stopScan() {
+    if (this.controls) {
+      this.controls.stop();
+      this.controls = undefined;
+    }
+  }
 
 
+  async showToast(message: string, color: string = 'success') {
+    const toast = await this.toastController.create({
+      message,
+      duration: 1500,
+      color,
+      position: 'top',
+    });
+    toast.present();
+  }
 
 }
