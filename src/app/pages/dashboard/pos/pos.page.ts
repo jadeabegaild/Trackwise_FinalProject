@@ -1,10 +1,19 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
-import { AlertController, LoadingController, ToastController } from '@ionic/angular';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
+import {
+  AlertController,
+  LoadingController,
+  ToastController,
+} from '@ionic/angular';
 import { ProductService, Product } from '../../../services/product.service';
 import { ReportsService, Order } from '../../../services/reports';
 import { Subscription } from 'rxjs';
 import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
-
 
 interface CartItem extends Product {
   cartQuantity: number;
@@ -25,7 +34,7 @@ interface ExtendedOrder extends Order {
 })
 export class PosPage implements OnInit, OnDestroy {
   @ViewChild('videoPreview', { static: false }) videoElement!: ElementRef;
-  
+
   products: Product[] = [];
   filteredProducts: Product[] = [];
   cartItems: CartItem[] = [];
@@ -40,12 +49,13 @@ export class PosPage implements OnInit, OnDestroy {
 
   scanner: BrowserMultiFormatReader;
   controls: IScannerControls | undefined;
+  private beepSound = new Audio('assets/sounds/sound.mp3');
 
   isScannerOpen = false;
   scanMessage = '';
 
   // Scanner Debounce Logic
-  lastScanTime = 0; 
+  lastScanTime = 0;
   scanInterval = 2000; // Reduced to 2 seconds for better UX (adjust if needed)
 
   private productsSubscription: Subscription | undefined;
@@ -59,7 +69,6 @@ export class PosPage implements OnInit, OnDestroy {
   ) {
     this.scanner = new BrowserMultiFormatReader();
   }
-
 
   async ngOnInit() {
     const loading = await this.loadingController.create({
@@ -97,6 +106,17 @@ export class PosPage implements OnInit, OnDestroy {
   loadCategories() {
     this.productService.getCategories().subscribe((cats: string[]) => {
       this.categories = [...cats]; // remove 'all'
+    });
+  }
+
+  playScanSound() {
+    // Ensure you have a file at src/assets/sounds/beep.mp3
+    const audio = new Audio('assets/sound/sound.mp3');
+    audio.play().catch((e) => {
+      console.log(
+        'Audio play failed (user interaction might be required first):',
+        e
+      );
     });
   }
 
@@ -215,11 +235,12 @@ export class PosPage implements OnInit, OnDestroy {
 
       // Proceed with normal checkout for smaller orders
       await this.processNormalCheckout(loading);
-
     } catch (error: any) {
       console.error('Error during checkout:', error);
       await loading.dismiss();
-      this.presentErrorAlert('Failed to process checkout: ' + (error.message || 'Unknown error'));
+      this.presentErrorAlert(
+        'Failed to process checkout: ' + (error.message || 'Unknown error')
+      );
     }
   }
 
@@ -231,7 +252,7 @@ export class PosPage implements OnInit, OnDestroy {
       subtotal: this.getSubtotal(),
       total: this.getTotal(),
       status: 'completed',
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     // Estimate size (Firestore limit is 1,048,576 bytes)
@@ -244,7 +265,7 @@ export class PosPage implements OnInit, OnDestroy {
   }
 
   private minimizeOrderItems(cartItems: CartItem[]): any[] {
-    return cartItems.map(item => ({
+    return cartItems.map((item) => ({
       id: item.id || '',
       name: item.name,
       price: item.price,
@@ -261,15 +282,15 @@ export class PosPage implements OnInit, OnDestroy {
       buttons: [
         {
           text: 'Cancel',
-          role: 'cancel'
+          role: 'cancel',
         },
         {
           text: 'Split Order',
           handler: async () => {
             await this.processSplitOrder();
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -289,7 +310,11 @@ export class PosPage implements OnInit, OnDestroy {
       // Process each chunk as separate order
       for (let i = 0; i < orderChunks.length; i++) {
         const chunk = orderChunks[i];
-        const orderId = await this.processOrderChunk(chunk, i, orderChunks.length);
+        const orderId = await this.processOrderChunk(
+          chunk,
+          i,
+          orderChunks.length
+        );
         if (orderId) {
           orderIds.push(orderId);
         }
@@ -305,11 +330,12 @@ export class PosPage implements OnInit, OnDestroy {
 
       // Show success with receipt for first chunk
       this.showSplitOrderSuccess(orderChunks.length);
-
     } catch (error: any) {
       await loading.dismiss();
       console.error('Error processing split order:', error);
-      this.presentErrorAlert('Failed to process large order: ' + (error.message || 'Unknown error'));
+      this.presentErrorAlert(
+        'Failed to process large order: ' + (error.message || 'Unknown error')
+      );
     }
   }
 
@@ -321,7 +347,11 @@ export class PosPage implements OnInit, OnDestroy {
     return chunks;
   }
 
-  private async processOrderChunk(chunk: CartItem[], chunkIndex: number, totalChunks: number): Promise<string | null> {
+  private async processOrderChunk(
+    chunk: CartItem[],
+    chunkIndex: number,
+    totalChunks: number
+  ): Promise<string | null> {
     const minimizedItems = this.minimizeOrderItems(chunk);
 
     const orderData: Partial<ExtendedOrder> = {
@@ -332,7 +362,7 @@ export class PosPage implements OnInit, OnDestroy {
       isSplitOrder: true,
       chunkIndex: chunkIndex + 1,
       totalChunks: totalChunks,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     try {
@@ -346,7 +376,10 @@ export class PosPage implements OnInit, OnDestroy {
   }
 
   private calculateChunkTotal(chunk: CartItem[]): number {
-    return chunk.reduce((total, item) => total + (item.price * item.cartQuantity), 0);
+    return chunk.reduce(
+      (total, item) => total + item.price * item.cartQuantity,
+      0
+    );
   }
 
   private calculateChunkSubtotal(chunk: CartItem[]): number {
@@ -360,7 +393,10 @@ export class PosPage implements OnInit, OnDestroy {
       const product = this.products.find((p) => p.id === cartItem.id);
       if (product) {
         const newQuantity = product.quantity - cartItem.cartQuantity;
-        await this.productService.updateProductQuantity(cartItem.id, newQuantity);
+        await this.productService.updateProductQuantity(
+          cartItem.id,
+          newQuantity
+        );
 
         // Update local products array
         product.quantity = newQuantity;
@@ -376,7 +412,7 @@ export class PosPage implements OnInit, OnDestroy {
       orderIds: orderIds,
       createdAt: new Date(),
       totalOrders: orderIds.length,
-      totalAmount: this.getTotal()
+      totalAmount: this.getTotal(),
     };
 
     // Use the existing saveOrder method or create a new one
@@ -392,7 +428,7 @@ export class PosPage implements OnInit, OnDestroy {
       subtotal: this.getSubtotal(),
       total: this.getTotal(),
       status: 'completed',
-      createdAt: new Date()
+      createdAt: new Date(),
     };
 
     await this.reportsService.saveOrder(orderData);
@@ -404,7 +440,10 @@ export class PosPage implements OnInit, OnDestroy {
       const product = this.products.find((p) => p.id === cartItem.id);
       if (product) {
         const newQuantity = product.quantity - cartItem.cartQuantity;
-        await this.productService.updateProductQuantity(cartItem.id, newQuantity);
+        await this.productService.updateProductQuantity(
+          cartItem.id,
+          newQuantity
+        );
       }
     });
 
@@ -437,7 +476,7 @@ export class PosPage implements OnInit, OnDestroy {
       total: totalAmount,
       payment: paymentAmount,
       change: changeAmount,
-      date: new Date()
+      date: new Date(),
     };
 
     // Open receipt modal
@@ -460,7 +499,10 @@ export class PosPage implements OnInit, OnDestroy {
 
   private async showSplitOrderSuccess(totalChunks: number) {
     // Save receipt data for first chunk (or you might want to handle this differently)
-    const receiptItems = this.cartItems.slice(0, Math.min(30, this.cartItems.length));
+    const receiptItems = this.cartItems.slice(
+      0,
+      Math.min(30, this.cartItems.length)
+    );
     const totalAmount = this.getTotal();
     const paymentAmount = this.customerPayment;
     const changeAmount = this.changeAmount;
@@ -472,7 +514,7 @@ export class PosPage implements OnInit, OnDestroy {
       change: changeAmount,
       date: new Date(),
       isSplitOrder: true,
-      totalChunks: totalChunks
+      totalChunks: totalChunks,
     };
 
     // Open receipt modal
@@ -515,7 +557,7 @@ export class PosPage implements OnInit, OnDestroy {
   openScannerModal() {
     this.isScannerOpen = true;
     // Wait slightly longer to ensure video element is rendered
-    setTimeout(() => this.startScan(), 300); 
+    setTimeout(() => this.startScan(), 300);
   }
 
   closeScannerModal() {
@@ -540,9 +582,11 @@ export class PosPage implements OnInit, OnDestroy {
         this.showToast('No camera found', 'danger');
         return;
       }
-      
+
       // Try to find back camera, else use the first available
-      const selectedDevice = devices.find(d => d.label.toLowerCase().includes('back'))?.deviceId || devices[0].deviceId;
+      const selectedDevice =
+        devices.find((d) => d.label.toLowerCase().includes('back'))?.deviceId ||
+        devices[0].deviceId;
 
       this.controls = await this.scanner.decodeFromVideoDevice(
         selectedDevice,
@@ -565,15 +609,18 @@ export class PosPage implements OnInit, OnDestroy {
     }
   }
 
-
   handleBarcode(barcode: string) {
-    const product = this.products.find(p => p.barcode === barcode);
+    const product = this.products.find((p) => p.barcode === barcode);
 
     if (product) {
+      // PLAY SOUND HERE
+      this.playScanSound();
+
       this.addToCart(product);
       this.showToast(`${product.name} added to cart`);
     } else {
       this.scanMessage = 'Product not found';
+      // Optional: You could play a different "error" sound here
       this.showToast('Product not found', 'warning');
     }
   }
@@ -585,7 +632,6 @@ export class PosPage implements OnInit, OnDestroy {
     }
   }
 
-
   async showToast(message: string, color: string = 'success') {
     const toast = await this.toastController.create({
       message,
@@ -595,5 +641,4 @@ export class PosPage implements OnInit, OnDestroy {
     });
     toast.present();
   }
-
 }

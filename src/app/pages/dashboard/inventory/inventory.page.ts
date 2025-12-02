@@ -1,8 +1,14 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AlertController, LoadingController } from '@ionic/angular';
 import { ProductService, Product } from '../../../services/product.service';
-import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser'; 
+import { BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -42,7 +48,7 @@ export class InventoryPage implements OnInit, OnDestroy {
   scanner = new BrowserMultiFormatReader();
   scanControls: IScannerControls | null = null;
   scanning = false;
-  
+
   // --- INVENTORY SCANNER ---
   updateInventoryModalOpen = false;
   scannedProduct: Product | null = null;
@@ -52,7 +58,6 @@ export class InventoryPage implements OnInit, OnDestroy {
   inventoryScanner = new BrowserMultiFormatReader();
   inventoryControls: IScannerControls | null = null;
   inventoryScanning = false;
-
 
   private productsSubscription: Subscription | undefined;
 
@@ -69,11 +74,11 @@ export class InventoryPage implements OnInit, OnDestroy {
       category: ['', Validators.required],
       barcode: ['', Validators.required],
       image: [''],
-      netWeight: ['']
+      netWeight: [''],
     });
 
     this.categoryForm = this.formBuilder.group({
-      name: ['', Validators.required]
+      name: ['', Validators.required],
     });
   }
 
@@ -82,7 +87,7 @@ export class InventoryPage implements OnInit, OnDestroy {
   // ================================
   async ngOnInit() {
     const loading = await this.loadingController.create({
-      message: 'Loading products...'
+      message: 'Loading products...',
     });
     await loading.present();
 
@@ -111,11 +116,17 @@ export class InventoryPage implements OnInit, OnDestroy {
   // ================================
   // 🔹 STOCK STATUS LOGIC (FIXED)
   // ================================
-  getStockStatus(quantity: number): { label: string, color: string } {
+  playScanSound() {
+    const audio = new Audio('assets/sound/sound.mp3');
+    audio.load();
+    audio.play().catch((error) => console.error('Error playing sound:', error));
+  }
+  getStockStatus(quantity: number): { label: string; color: string } {
     // Strictly checks quantity only. Price is ignored.
     if (quantity === 0) {
       return { label: 'Out of Stock', color: 'danger' };
-    } else if (quantity < 20) { // Changed to 20 to match the 'low-stock' filter logic below
+    } else if (quantity < 20) {
+      // Changed to 20 to match the 'low-stock' filter logic below
       return { label: 'Low Stock', color: 'warning' };
     } else {
       return { label: 'In Stock', color: 'success' };
@@ -136,7 +147,6 @@ export class InventoryPage implements OnInit, OnDestroy {
     this.applyFilters();
   }
 
-
   // ================================
   // 🔹 FILTERING
   // ================================
@@ -151,7 +161,7 @@ export class InventoryPage implements OnInit, OnDestroy {
   }
 
   applyFilters() {
-    this.filteredProducts = this.products.filter(product => {
+    this.filteredProducts = this.products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(this.searchTerm) ||
         product.barcode.toLowerCase().includes(this.searchTerm);
@@ -176,7 +186,6 @@ export class InventoryPage implements OnInit, OnDestroy {
     });
   }
 
-
   // ================================
   // 🔹 OPEN MODALS
   // ================================
@@ -190,7 +199,7 @@ export class InventoryPage implements OnInit, OnDestroy {
       quantity: 0,
       category: '',
       barcode: '',
-      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=150'
+      image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=150',
     });
 
     this.isModalOpen = true;
@@ -204,7 +213,6 @@ export class InventoryPage implements OnInit, OnDestroy {
 
     this.isModalOpen = true;
   }
-
 
   closeModal() {
     this.stopBarcodeScan();
@@ -221,7 +229,7 @@ export class InventoryPage implements OnInit, OnDestroy {
         {
           text: 'Cancel',
           role: 'cancel',
-          cssClass: 'secondary'
+          cssClass: 'secondary',
         },
         {
           text: 'Delete',
@@ -229,9 +237,9 @@ export class InventoryPage implements OnInit, OnDestroy {
           cssClass: 'danger-button',
           handler: async () => {
             await this.performDelete(productId);
-          }
-        }
-      ]
+          },
+        },
+      ],
     });
 
     await alert.present();
@@ -241,7 +249,7 @@ export class InventoryPage implements OnInit, OnDestroy {
     const loading = await this.loadingController.create({
       message: 'Deleting product...',
       spinner: 'crescent',
-      cssClass: 'delete-loading'
+      cssClass: 'delete-loading',
     });
 
     await loading.present();
@@ -255,11 +263,10 @@ export class InventoryPage implements OnInit, OnDestroy {
         header: 'Success',
         message: 'Product deleted successfully',
         buttons: ['OK'],
-        cssClass: 'alert-success'
+        cssClass: 'alert-success',
       });
 
       await successAlert.present();
-
     } catch (error) {
       console.error('Error deleting product:', error);
 
@@ -269,7 +276,7 @@ export class InventoryPage implements OnInit, OnDestroy {
         header: 'Delete Failed',
         message: 'Failed to delete product. Please try again.',
         buttons: ['OK'],
-        cssClass: 'alert-error'
+        cssClass: 'alert-error',
       });
 
       await errorAlert.present();
@@ -284,7 +291,7 @@ export class InventoryPage implements OnInit, OnDestroy {
 
       reader.onload = (e: any) => {
         this.productForm.patchValue({
-          image: e.target.result
+          image: e.target.result,
         });
       };
 
@@ -299,7 +306,7 @@ export class InventoryPage implements OnInit, OnDestroy {
     if (!this.productForm.valid) return;
 
     const loading = await this.loadingController.create({
-      message: this.isEditing ? 'Updating product...' : 'Adding product...'
+      message: this.isEditing ? 'Updating product...' : 'Adding product...',
     });
     await loading.present();
 
@@ -307,7 +314,10 @@ export class InventoryPage implements OnInit, OnDestroy {
       const formValue = this.productForm.value;
 
       if (this.isEditing && this.editingProductId) {
-        await this.productService.updateProduct(this.editingProductId, formValue);
+        await this.productService.updateProduct(
+          this.editingProductId,
+          formValue
+        );
       } else {
         await this.productService.addProduct(formValue);
       }
@@ -320,16 +330,13 @@ export class InventoryPage implements OnInit, OnDestroy {
     }
   }
 
-
   // ================================
   // 🔹 BARCODE SCANNING
   // ================================
   async startBarcodeScan() {
     this.scanning = true;
 
-    // Wait for video element to render
     setTimeout(async () => {
-      // FIX: Added safety check
       if (!this.addProductVideo || !this.addProductVideo.nativeElement) {
         console.error('Video element not found');
         this.scanning = false;
@@ -346,14 +353,18 @@ export class InventoryPage implements OnInit, OnDestroy {
           return;
         }
 
-        // Select the back camera if available, otherwise use the first one
-        const selectedDevice = devices.find(d => d.label.toLowerCase().includes('back'))?.deviceId || devices[0].deviceId;
+        const selectedDevice =
+          devices.find((d) => d.label.toLowerCase().includes('back'))
+            ?.deviceId || devices[0].deviceId;
 
         this.scanControls = await this.scanner.decodeFromVideoDevice(
           selectedDevice,
           video,
           (result, err) => {
             if (result) {
+              // 🔊 PLAY SOUND HERE
+              this.playScanSound();
+
               this.productForm.patchValue({ barcode: result.getText() });
               this.stopBarcodeScan();
             }
@@ -363,7 +374,7 @@ export class InventoryPage implements OnInit, OnDestroy {
         console.error('Camera initialization failed', e);
         this.scanning = false;
       }
-    }, 100); 
+    }, 100);
   }
 
   stopBarcodeScan() {
@@ -373,7 +384,6 @@ export class InventoryPage implements OnInit, OnDestroy {
     }
     this.scanning = false;
   }
-
 
   // ================================
   // 🔹 CATEGORY SAVE
@@ -406,7 +416,6 @@ export class InventoryPage implements OnInit, OnDestroy {
     }
   }
 
-
   // Open modal
   openUpdateInventoryModal() {
     this.updateInventoryModalOpen = true;
@@ -429,13 +438,12 @@ export class InventoryPage implements OnInit, OnDestroy {
     this.inventoryScanning = true;
 
     setTimeout(async () => {
-      // FIX: Added safety check
       if (!this.inventoryVideo || !this.inventoryVideo.nativeElement) {
         console.error('Inventory video not found');
         this.inventoryScanning = false;
         return;
       }
-      
+
       const video = this.inventoryVideo.nativeElement;
 
       try {
@@ -446,27 +454,30 @@ export class InventoryPage implements OnInit, OnDestroy {
           return;
         }
 
-        // Select the back camera if available
-        const selectedDevice = devices.find(d => d.label.toLowerCase().includes('back'))?.deviceId || devices[0].deviceId;
+        const selectedDevice =
+          devices.find((d) => d.label.toLowerCase().includes('back'))
+            ?.deviceId || devices[0].deviceId;
 
-        this.inventoryControls = await this.inventoryScanner.decodeFromVideoDevice(
-          selectedDevice,
-          video,
-          (result, err) => {
-            if (result) {
-              this.findProductByBarcode(result.getText());
-              // Stop immediately upon find to prevent double-scanning
-              this.stopInventoryScan();
+        this.inventoryControls =
+          await this.inventoryScanner.decodeFromVideoDevice(
+            selectedDevice,
+            video,
+            (result, err) => {
+              if (result) {
+                // 🔊 PLAY SOUND HERE
+                this.playScanSound();
+
+                this.findProductByBarcode(result.getText());
+                this.stopInventoryScan();
+              }
             }
-          }
-        );
+          );
       } catch (e) {
         console.error('Inventory Scanner initialization failed', e);
         this.inventoryScanning = false;
       }
-    }, 100); 
+    }, 100);
   }
-
 
   stopInventoryScan() {
     if (this.inventoryControls) {
@@ -476,10 +487,9 @@ export class InventoryPage implements OnInit, OnDestroy {
     this.inventoryScanning = false;
   }
 
-
   // Find product by barcode
   findProductByBarcode(barcode: string) {
-    const product = this.products.find(p => p.barcode === barcode);
+    const product = this.products.find((p) => p.barcode === barcode);
     if (product) {
       this.scannedProduct = product;
       this.additionalQuantity = 0;
@@ -492,13 +502,18 @@ export class InventoryPage implements OnInit, OnDestroy {
   async saveInventoryUpdate() {
     if (!this.scannedProduct) return;
 
-    const newQty = this.scannedProduct.quantity + Number(this.additionalQuantity);
+    const newQty =
+      this.scannedProduct.quantity + Number(this.additionalQuantity);
 
     try {
-      await this.productService.updateProduct(this.scannedProduct.id!, { quantity: newQty });
+      await this.productService.updateProduct(this.scannedProduct.id!, {
+        quantity: newQty,
+      });
 
       // Update locally
-      const index = this.products.findIndex(p => p.id === this.scannedProduct!.id);
+      const index = this.products.findIndex(
+        (p) => p.id === this.scannedProduct!.id
+      );
       if (index > -1) this.products[index].quantity = newQty;
       this.applyFilters();
 
